@@ -1,0 +1,126 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="../../node_modules/mocha/mocha.css" type="text/css" charset="utf-8">
+    </head>
+    <body>
+        <div id="mocha"></div>
+        <script src="../../node_modules/bytebuffer/dist/ByteBufferAB.js"></script>
+        <script src="../../node_modules/protobufjs/dist/ProtoBuf.noparse.js"></script>
+        <script src="../../node_modules/traceur/bin/traceur-runtime.js"></script>
+        <script src="../../dist/axolotl.js"></script>
+        <script src="../../node_modules/mocha/mocha.js"></script>
+        <script src="../../node_modules/chai/chai.js"></script>
+        <script>
+            mocha.setup("bdd");
+            var assert = chai.assert;
+
+            // Avoid bridge breaking when running from a real browser
+            var isPhantomJS = window.PHANTOMJS;
+            if (!isPhantomJS) {
+                window.PHANTOMJS = {};
+                window.alert = function() {};
+            }
+        </script>
+        <script src="../../node_modules/grunt-mocha/phantomjs/bridge.js"></script>
+        <script>
+            describe("integration", function() {
+                describe("browser", function() {
+                    it("can access the global", function() {
+                        assert.notEqual(window.axolotl, undefined);
+                    });
+                    // PhantomJS doesn't support the features of ArrayBuffers.
+                    if (!isPhantomJS) {
+                        it("has basic functionality", function() {
+                            var crypto = {
+                                verifySignature: function() {
+                                    return Promise.resolve(true);
+                                },
+                                generateKeyPair: function() {
+                                    return Promise.resolve({
+                                        public: new ArrayBuffer(32),
+                                        private: new ArrayBuffer(32)
+                                    });
+                                },
+                                calculateAgreement: function() {
+                                    return Promise.resolve(new ArrayBuffer(32));
+                                },
+                                hmac: function(key, data) {
+                                    return window.crypto.subtle.importKey('raw', key, {name: 'HMAC', hash: {name: 'SHA-256'}}, false, ['sign']).then(function(key) {
+                                        return window.crypto.subtle.sign({name: 'HMAC', hash: 'SHA-256'}, key, data);
+                                    });
+                                },
+                                encrypt: function(key, data, iv) {
+                                    return window.crypto.subtle.importKey('raw', key, {name: 'AES-CBC'}, false, ['encrypt']).then(function(key) {
+                                        return window.crypto.subtle.encrypt({name: 'AES-CBC', iv: new Uint8Array(iv)}, key, data);
+                                    });
+                                },
+                                decrypt: function(key, data, iv) {
+                                    return window.crypto.subtle.importKey('raw', key, {name: 'AES-CBC'}, false, ['decrypt']).then(function(key) {
+                                        return window.crypto.subtle.decrypt({name: 'AES-CBC', iv: new Uint8Array(iv)}, key, data);
+                                    });
+                                }
+                            };
+
+                            var aliceStore = {
+                                getIdentityKeyPair: function() {
+                                    return {
+                                        public: new ArrayBuffer(32),
+                                        private: new ArrayBuffer(32)
+                                    };
+                                },
+                                getLocalRegistrationId: function() {
+                                    return 5;
+                                }
+                            };
+
+                            var bobStore = {
+                                getIdentityKeyPair: function() {
+                                    return {
+                                        public: new ArrayBuffer(32),
+                                        private: new ArrayBuffer(32)
+                                    };
+                                },
+                                getLocalRegistrationId: function() {
+                                    return 5;
+                                },
+                                getSignedPreKeyPair: function() {
+                                    return new ArrayBuffer(32);
+                                }
+                            };
+
+                            var aliceFactory = axolotl(crypto).createSessionFactory(aliceStore);
+                            var bobFactory = axolotl(crypto).createSessionFactory(bobStore);
+                            var bobPreKeyBundle = {
+                                registrationId: 3,
+                                deviceId: 4,
+                                preKey: null,
+                                preKeyId: null,
+                                signedPreKey: new ArrayBuffer(32),
+                                signedPreKeyId: 5,
+                                signedPreKeySignature: new ArrayBuffer(64),
+                                identityKey: new ArrayBuffer(32)
+                            };
+                            var plaintextSent = new Uint8Array([1, 2, 3]).buffer;
+                            return aliceFactory.createSessionFromPreKeyBundle(1, 2, bobPreKeyBundle).then(function(aliceSession) {
+                                return aliceSession.encryptMessage(plaintextSent).then(function(preKeyMessage) {
+                                    return bobFactory.createSessionFromPreKeyWhisperMessage(1, 2, preKeyMessage).then(function(bobSession) {
+                                        return bobSession.decryptPreKeyMessage(preKeyMessage).then(function(plaintextReceived) {
+                                            var plaintextSentView = new Uint8Array(plaintextSent);
+                                            var plaintextReceivedView = new Uint8Array(plaintextReceived);
+                                            assert.equal(plaintextSentView[0], plaintextReceivedView[0]);
+                                            assert.equal(plaintextSentView[1], plaintextReceivedView[1]);
+                                            assert.equal(plaintextSentView[2], plaintextReceivedView[2]);
+                                        });
+                                    });
+                                });
+                            });
+                        });
+                    }
+                });
+            });
+        </script>
+        <script>
+            mocha.run();
+        </script>
+    </body>
+</html>

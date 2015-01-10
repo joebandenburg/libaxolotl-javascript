@@ -1,0 +1,4 @@
+{
+    "mocha": true,
+    "esnext": true
+}

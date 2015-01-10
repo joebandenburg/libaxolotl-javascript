@@ -1,0 +1,47 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="../../node_modules/mocha/mocha.css" type="text/css" charset="utf-8">
+    </head>
+    <body>
+        <div id="mocha"></div>
+        <script src="../../node_modules/requirejs-browser/require.js"></script>
+        <script src="../../node_modules/mocha/mocha.js"></script>
+        <script>
+            mocha.setup("bdd");
+
+            // Avoid bridge breaking when running from a real browser
+            if (!window.PHANTOMJS) {
+                window.PHANTOMJS = {};
+                window.alert = function() {};
+            }
+        </script>
+        <script src="../../node_modules/grunt-mocha/phantomjs/bridge.js"></script>
+        <!-- TODO: Build runtime? -->
+        <script>
+            require.config({
+                paths: {
+                    axolotl: "../../dist/axolotl",
+                    chai: "../../node_modules/chai/chai",
+                    protobufjs: "../../node_modules/protobufjs/dist/ProtoBuf.noparse",
+                    ByteBuffer: "../../node_modules/bytebuffer/dist/ByteBufferAB",
+                    Long: "../../node_modules/long/dist/Long",
+                    "traceur-runtime": "../../node_modules/traceur/bin/traceur-runtime"
+                }
+            });
+            require(["axolotl", "chai"], function(axolotl, chai) {
+                var assert = chai.assert;
+                describe("integration", function() {
+                    describe("browser using amd", function() {
+                        it("can access the amd module", function() {
+                            assert.notEqual(axolotl, undefined);
+                        });
+                        it("can invoke axolotl", function() {
+                            axolotl({});
+                        });
+                    });
+                });
+                mocha.run();
+            });
+        </script>
+    </body>
+</html>

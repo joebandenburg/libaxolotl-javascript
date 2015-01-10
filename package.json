@@ -1,0 +1,48 @@
+{
+  "name": "axolotl",
+  "version": "0.5.0",
+  "description": "A JavaScript port of libaxolotl. Axolotl is a ratcheting forward secrecy protocol.",
+  "main": "dist/libaxolotl.js",
+  "directories": {
+    "test": "test"
+  },
+  "devDependencies": {
+    "blanket": "^1.1.6",
+    "bytebuffer": "^3.5.4",
+    "chai": "~1.10.0",
+    "chai-as-promised": "^4.1.1",
+    "co": "^4.1.0",
+    "grunt": "~0.4.5",
+    "grunt-blanket": "0.0.8",
+    "grunt-contrib-clean": "^0.6.0",
+    "grunt-contrib-copy": "^0.7.0",
+    "grunt-contrib-jshint": "^0.10.0",
+    "grunt-mocha": "~0.4.11",
+    "grunt-mocha-test": "~0.12.4",
+    "grunt-pure-cjs": "^1.4.0",
+    "grunt-traceur": "^0.5.1",
+    "long": "^2.2.3",
+    "mocha": "~2.1.0",
+    "mocha-traceur": "^2.1.0",
+    "requirejs-browser": "^2.1.9",
+    "grunt-contrib-concat": "~0.5.0",
+    "grunt-jscs": "~1.1.0"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "keywords": [
+    "axolotl",
+    "textsecure"
+  ],
+  "author": "Joe Bandenburg <joe@bandenburg.com>",
+  "license": "LGPLv3",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/joebandenburg/libaxolotl-javascript.git"
+  },
+  "dependencies": {
+    "protobufjs": "~3.8.2",
+    "traceur-runtime": "0.0.59"
+  }
+}
