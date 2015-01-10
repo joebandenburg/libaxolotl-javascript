@@ -126,8 +126,8 @@ module.exports = function(grunt) {
     grunt.registerTask("coverage", ["traceur", "copy:coverage", "blanket", "mochaTest:coverage"]);
 
     grunt.registerTask("check", ["jshint", "jscs"]);
-    grunt.registerTask("test", ["mochaTest:unitTests"]);
-    grunt.registerTask("default", ["clean", "check", "test"]);
+    grunt.registerTask("test", ["clean", "check", "mochaTest:unitTests"]);
+    grunt.registerTask("default", ["test"]);
     grunt.registerTask("dist", ["default", "traceur", "pure_cjs", "concat"]);
     grunt.registerTask("integration-test", ["dist", "mochaTest:integrationTests", "mocha:integrationTests"]);
 };
