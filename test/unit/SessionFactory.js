@@ -3,12 +3,14 @@ import chaiAsPromise from "chai-as-promised";
 import SessionFactory from "../../src/SessionFactory";
 import Session from "../../src/Session";
 import ArrayBufferUtils from "../../src/ArrayBufferUtils";
+import Messages from "../../src/Messages";
 import crypto from "./FakeCrypto";
 import {
     InvalidMessageException,
     DuplicateMessageException,
     InvalidKeyException,
-    ConcurrentUseException
+    ConcurrentUseException,
+    UnsupportedProtocolVersionException
 } from "../../src/Exceptions";
 import co from "co";
 
@@ -198,6 +200,17 @@ describe("SessionFactory", () => {
             var ciphertext2 = bobSession.encryptMessage(plaintext);
             aliceSession.decryptMessage(ciphertext2);
             yield assert.isRejected(aliceSession.decryptMessage(ciphertext2), ConcurrentUseException);
+        }));
+        it("rejects version 2 of PreKeyWhisperMessage", co.wrap(function*() {
+            var message = Messages.encodePreKeyWhisperMessage({
+                version: {
+                    current: 2,
+                    max: 3
+                },
+                message: {}
+            });
+            yield assert.isRejected(aliceFactory.createSessionFromPreKeyWhisperMessage(recipientId, deviceId, message),
+                UnsupportedProtocolVersionException);
         }));
     });
 });
