@@ -39,8 +39,11 @@ function Axolotl(crypto) {
      * @return {number} generated registration ID.
      */
     self.generateRegistrationId = (extendedRange) => {
-        var upperLimit = (extendedRange) ? 0xfffffffe : 16380;
-        return crypto.randomInt(upperLimit) + 1;
+        var upperLimit = (extendedRange) ? 0x7ffffffe : 0x3ffc;
+        var bytes = crypto.randomBytes(4);
+        var number = new Uint32Array(bytes)[0];
+        // TODO: Mod is a bad way to do this. Makes lower values more likely.
+        return (number % upperLimit) + 1;
     };
 
     /**
@@ -57,9 +60,10 @@ function Axolotl(crypto) {
      */
     self.generatePreKeys = co.wrap(function*(start, count) {
         var results = [];
+        start--;
         for (var i = 0; i < count; i++) {
             results.push({
-                id: ((start + i) % 0xffffff) + 1,
+                id: ((start + i) % 0xfffffe) + 1,
                 keyPair: yield crypto.generateKeyPair()
             });
         }

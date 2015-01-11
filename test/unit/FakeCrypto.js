@@ -42,8 +42,8 @@ var fakeCrypto = {
             resolve(toArrayBuffer(dh.computeSecret(toBuffer(publicKey))));
         });
     },
-    randomInt: function(maxValue) {
-        return Math.random() * maxValue;
+    randomBytes: function(byteCount) {
+        return crypto.randomBytes(byteCount);
     },
     sign: function() {
         return new Promise(function(resolve) {

@@ -26,7 +26,8 @@
     "mocha-traceur": "^2.1.0",
     "requirejs-browser": "^2.1.9",
     "grunt-contrib-concat": "~0.5.0",
-    "grunt-jscs": "~1.1.0"
+    "grunt-jscs": "~1.1.0",
+    "sinon": "~1.12.2"
   },
   "scripts": {
     "test": "grunt test"
