@@ -60,20 +60,20 @@ export default {
         return ArrayBufferUtils.concat(encodeWhisperMessageMacInput(whisperMessage), whisperMessage.mac);
     },
     encodeWhisperMessageMacInput: encodeWhisperMessageMacInput,
-    decodePreKeyWhisperMessage: (preKeyWhisperMessage) => {
-        var message = WhisperProtos.PreKeyWhisperMessage.decode(preKeyWhisperMessage.slice(1));
+    decodePreKeyWhisperMessage: (preKeyWhisperMessageBytes) => {
+        var message = WhisperProtos.PreKeyWhisperMessage.decode(preKeyWhisperMessageBytes.slice(1));
         toArrayBuffer(message, "message");
         toArrayBuffer(message, "baseKey");
         toArrayBuffer(message, "identityKey");
         return {
-            version: extractMessageVersion(preKeyWhisperMessage.slice(0, 1)),
+            version: extractMessageVersion(preKeyWhisperMessageBytes.slice(0, 1)),
             message: message
         };
     },
-    encodePreKeyWhisperMessage: (preKeyWhisperMessageBytes) => {
-        var message = preKeyWhisperMessageBytes.message;
+    encodePreKeyWhisperMessage: (preKeyWhisperMessage) => {
+        var message = preKeyWhisperMessage.message;
         var messageBytes = new WhisperProtos.PreKeyWhisperMessage(message).encode().toArrayBuffer();
-        var versionField = getVersionField(preKeyWhisperMessageBytes.version);
+        var versionField = getVersionField(preKeyWhisperMessage.version);
         return ArrayBufferUtils.concat(versionField, messageBytes);
     }
 };
