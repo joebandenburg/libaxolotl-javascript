@@ -1,0 +1,13 @@
+/build
+/src
+/test
+/protobuf
+/.travis.yml
+/Gruntfile.js
+/index.js
+/banner.js
+/bower.json
+/.travis.yml
+/.jshintrc
+/.jscsrc
+/.gitignore
