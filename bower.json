@@ -1,7 +1,7 @@
 {
   "name": "axolotl",
   "main": "dist/axolotl.js",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "authors": [
     "Joe Bandenburg <joe@bandenburg.com>"
   ],
@@ -17,12 +17,20 @@
   ],
   "license": "LGPLv3",
   "ignore": [
-    "**/.*",
-    "node_modules",
-    "bower_components",
-    "test",
+    "build",
     "src",
-    "protobuf"
+    "test",
+    "protobuf",
+    ".travis.yml",
+    "Gruntfile.js",
+    "index.js",
+    "banner.js",
+    "package.json",
+    ".travis.yml",
+    ".jshintrc",
+    ".jscsrc",
+    ".gitignore",
+    "node_modules"
   ],
   "dependencies": {
     "protobuf": "~3.8.2",
