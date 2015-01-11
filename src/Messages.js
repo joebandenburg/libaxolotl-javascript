@@ -67,7 +67,7 @@ export default {
         toArrayBuffer(message, "identityKey");
         return {
             version: extractMessageVersion(preKeyWhisperMessage.slice(0, 1)),
-            message: message,
+            message: message
         };
     },
     encodePreKeyWhisperMessage: (preKeyWhisperMessageBytes) => {
