@@ -31,5 +31,6 @@ export default {
 
     // Client parameters
     // TODO: Make these configurable?
-    maximumRetainedReceivedChainKeys: 5
+    maximumRetainedReceivedChainKeys: 5,
+    maximumMissedMessages: 2000
 };

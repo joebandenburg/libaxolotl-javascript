@@ -169,8 +169,8 @@ function Session(crypto, sessionState) {
             delete chain.messageKeys[counter];
             return cachedMessageKeys;
         }
-        if (counter - chain.index > 2000) {
-            throw new InvalidMessageException("Over 2000 messages into the future");
+        if (counter - chain.index > ProtocolConstants.maximumMissedMessages) {
+            throw new InvalidMessageException("Too many skipped messages");
         }
         while (chain.index < counter) {
             chain.messageKeys[chain.index] = yield ratchet.deriveMessageKeys(chain.key);

@@ -74,6 +74,16 @@ describe("SessionFactory", () => {
             aliceSession = yield aliceFactory.createSessionFromPreKeyBundle(recipientId, deviceId, bobPreKeyBundle);
         }));
 
+        // Use smaller protocol parameters to keep the tests fast
+        var maximumMissedMessages;
+        beforeEach(function() {
+            maximumMissedMessages = ProtocolConstants.maximumMissedMessages;
+            ProtocolConstants.maximumMissedMessages = 20;
+        });
+        afterEach(function() {
+            ProtocolConstants.maximumMissedMessages = maximumMissedMessages;
+        });
+
         it("accepts multiple messages sent by one party", co.wrap(function*() {
             var preKeyMessage = yield aliceSession.encryptMessage(plaintext1Sent);
             var ciphertext2 = yield aliceSession.encryptMessage(plaintext2Sent);
@@ -96,6 +106,20 @@ describe("SessionFactory", () => {
 
             var plaintext2Received = yield bobSession.decryptPreKeyMessage(ciphertext1);
             assert.ok(ArrayBufferUtils.areEqual(plaintext1Sent, plaintext2Received));
+        }));
+        it("rejects messages that come after too many dropped messages", co.wrap(function*() {
+            var ciphertext = yield aliceSession.encryptMessage(plaintext1Sent);
+            var bobSession = yield bobFactory.createSessionFromPreKeyWhisperMessage(recipientId, deviceId, ciphertext);
+            yield bobSession.decryptPreKeyMessage(ciphertext);
+            ciphertext = yield bobSession.encryptMessage(plaintext2Sent);
+            yield aliceSession.decryptMessage(ciphertext);
+
+            for (var i = 0; i < ProtocolConstants.maximumMissedMessages + 1; i++) {
+                yield aliceSession.encryptMessage(new Uint8Array([1, 2, 3, 4, i]).buffer);
+            }
+
+            var lastCiphertext = yield aliceSession.encryptMessage(new Uint8Array([1, 2, 3, 4, 5, 6]).buffer);
+            yield assert.isRejected(bobSession.decryptMessage(lastCiphertext), InvalidMessageException);
         }));
         it("rejects duplicate message delivery", co.wrap(function*() {
             var ciphertext1 = yield aliceSession.encryptMessage(plaintext1Sent);
