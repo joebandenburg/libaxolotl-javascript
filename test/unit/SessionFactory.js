@@ -4,6 +4,7 @@ import SessionFactory from "../../src/SessionFactory";
 import Session from "../../src/Session";
 import ArrayBufferUtils from "../../src/ArrayBufferUtils";
 import Messages from "../../src/Messages";
+import ProtocolConstants from "../../src/ProtocolConstants";
 import crypto from "./FakeCrypto";
 import {
     InvalidMessageException,
@@ -211,6 +212,42 @@ describe("SessionFactory", () => {
             });
             yield assert.isRejected(aliceFactory.createSessionFromPreKeyWhisperMessage(recipientId, deviceId, message),
                 UnsupportedProtocolVersionException);
+        }));
+        it("accepts out of order message delivery (main ratchet)", co.wrap(function*() {
+            var ciphertext = yield aliceSession.encryptMessage(plaintext1Sent);
+            var bobSession = yield bobFactory.createSessionFromPreKeyWhisperMessage(recipientId, deviceId, ciphertext);
+            yield bobSession.decryptPreKeyMessage(ciphertext);
+            ciphertext = yield bobSession.encryptMessage(plaintext2Sent);
+            yield aliceSession.decryptMessage(ciphertext);
+
+            var oldCiphertext = yield aliceSession.encryptMessage(plaintext1Sent);
+
+            for (var i = 0; i < ProtocolConstants.maximumRetainedReceivedChainKeys; i++) {
+                ciphertext = yield aliceSession.encryptMessage(new Uint8Array([1, 2, 3, 4, i]).buffer);
+                yield bobSession.decryptMessage(ciphertext);
+                ciphertext = yield bobSession.encryptMessage(new Uint8Array([1, 2, 3, 4, i]).buffer);
+                yield aliceSession.decryptMessage(ciphertext);
+            }
+
+            assert.ok(ArrayBufferUtils.areEqual(plaintext1Sent, yield bobSession.decryptMessage(oldCiphertext)));
+        }));
+        it("rejects messages that are too far out of order (main ratchet)", co.wrap(function*() {
+            var ciphertext = yield aliceSession.encryptMessage(plaintext1Sent);
+            var bobSession = yield bobFactory.createSessionFromPreKeyWhisperMessage(recipientId, deviceId, ciphertext);
+            yield bobSession.decryptPreKeyMessage(ciphertext);
+            ciphertext = yield bobSession.encryptMessage(plaintext2Sent);
+            yield aliceSession.decryptMessage(ciphertext);
+
+            var oldCiphertext = yield aliceSession.encryptMessage(plaintext1Sent);
+
+            for (var i = 0; i < ProtocolConstants.maximumRetainedReceivedChainKeys + 1; i++) {
+                ciphertext = yield aliceSession.encryptMessage(new Uint8Array([1, 2, 3, 4, i]).buffer);
+                yield bobSession.decryptMessage(ciphertext);
+                ciphertext = yield bobSession.encryptMessage(new Uint8Array([1, 2, 3, 4, i]).buffer);
+                yield aliceSession.decryptMessage(ciphertext);
+            }
+
+            yield assert.isRejected(bobSession.decryptMessage(oldCiphertext), InvalidMessageException);
         }));
     });
 });
