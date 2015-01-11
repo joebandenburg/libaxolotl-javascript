@@ -16,13 +16,13 @@
     "textsecure"
   ],
   "license": "LGPLv3",
-  "private": true,
   "ignore": [
     "**/.*",
     "node_modules",
     "bower_components",
     "test",
-    "tests"
+    "src",
+    "protobuf"
   ],
   "dependencies": {
     "protobuf": "~3.8.2",
