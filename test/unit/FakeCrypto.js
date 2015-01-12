@@ -43,7 +43,7 @@ var fakeCrypto = {
         });
     },
     randomBytes: function(byteCount) {
-        return crypto.randomBytes(byteCount);
+        return toArrayBuffer(crypto.randomBytes(byteCount));
     },
     sign: function() {
         return new Promise(function(resolve) {

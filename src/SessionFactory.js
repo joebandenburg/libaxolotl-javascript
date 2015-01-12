@@ -30,7 +30,9 @@ function SessionFactory(crypto, store) {
 
     const ratchet = new Ratchet(crypto);
 
-    self.createSessionFromPreKeyBundle = co.wrap(function*(recipientId, deviceId, retrievedPreKey) {
+    var sessionCache = {};
+
+    self.createSessionFromPreKeyBundle = co.wrap(function*(toIdentity, retrievedPreKey) {
         // TODO: Check identity is trusted
         if (retrievedPreKey.signedPreKey) {
             var validSignature = yield crypto.verifySignature(retrievedPreKey.identityKey, retrievedPreKey.signedPreKey,
@@ -65,10 +67,11 @@ function SessionFactory(crypto, store) {
             baseKey: ourBaseKeyPair.public
         };
         sessionState.localRegistrationId = store.getLocalRegistrationId();
-        return new Session(crypto, sessionState);
+        store.putSession(toIdentity, sessionState);
+        return self.getSessionForIdentity(toIdentity);
     });
 
-    self.createSessionFromPreKeyWhisperMessage = co.wrap(function*(recipientId, deviceId, preKeyWhisperMessageBytes) {
+    self.createSessionFromPreKeyWhisperMessage = co.wrap(function*(fromIdentity, preKeyWhisperMessageBytes) {
         // TODO: Check identity is trusted
         // TODO: Check session doesn't already exist
         var preKeyWhisperMessage = Messages.decodePreKeyWhisperMessage(preKeyWhisperMessageBytes);
@@ -96,15 +99,23 @@ function SessionFactory(crypto, store) {
         };
 
         var sessionState = yield initializeBobSession(bobParameters);
-        return new Session(crypto, sessionState);
+        store.putSession(fromIdentity, sessionState);
+        return self.getSessionForIdentity(fromIdentity);
     });
 
-    self.createSessionFromKeyExchange = (recipientId, deviceId, keyExchange) => {
+    self.createSessionFromKeyExchange = (toIdentity, keyExchange) => {
         // TODO: Implement
     };
 
-    self.restoreSession = (recipientId, deviceId) => {
-        // TODO: Implement
+    self.hasSessionForIdentity = (identity) => {
+        return store.hasSession(identity);
+    };
+
+    self.getSessionForIdentity = (identity) => {
+        if (!sessionCache[identity]) {
+            sessionCache[identity] = new Session(crypto, store.getSession(identity));
+        }
+        return sessionCache[identity];
     };
 
     var initializeAliceSession = co.wrap(function*(parameters) {

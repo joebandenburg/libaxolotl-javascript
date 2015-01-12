@@ -25,7 +25,7 @@ describe("Session", () => {
                 message: {},
                 mac: new ArrayBuffer(8)
             });
-            yield assert.isRejected(session.decryptMessage(message), InvalidMessageException);
+            yield assert.isRejected(session.decryptWhisperMessage(message), InvalidMessageException);
         }));
     });
 });

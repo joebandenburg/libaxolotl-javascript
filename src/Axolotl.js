@@ -16,10 +16,14 @@
  */
 
 import SessionFactory from "./SessionFactory";
+import {InvalidMessageException} from "./Exceptions";
+import MessageTypes from "./MessageTypes";
 import co from "co";
 
-function Axolotl(crypto) {
+function Axolotl(crypto, store) {
     var self = this;
+
+    var sessionFactory = new SessionFactory(crypto, store);
 
     /**
      * Generate an identity key pair. Clients should only do this once, at install time.
@@ -101,17 +105,38 @@ function Axolotl(crypto) {
         };
     });
 
-    /**
-     * Creates a session factory associated with a store.
-     *
-     * @param {SessionStore} store - a store for sessions
-     * @return {SessionFactory} a session factory.
-     */
-    self.createSessionFactory = (store) => {
-        return new SessionFactory(crypto, store);
-    };
+    self.encryptMessage = co.wrap(function*(toIdentity, message) {
+        var session;
+        if (sessionFactory.hasSessionForIdentity(toIdentity)) {
+            session = sessionFactory.getSessionForIdentity(toIdentity);
+        } else {
+            var preKeyBundle = yield store.getPreKeyBundle(toIdentity);
+            session = yield sessionFactory.createSessionFromPreKeyBundle(toIdentity, preKeyBundle);
+        }
+        return yield session.encryptMessage(message);
+    });
+
+    self.decryptWhisperMessage = co.wrap(function*(fromIdentity, message) {
+        if (!sessionFactory.hasSessionForIdentity(fromIdentity)) {
+            throw new InvalidMessageException("No session for message");
+        }
+        return yield sessionFactory.getSessionForIdentity(fromIdentity).decryptWhisperMessage(message);
+    });
+
+    self.decryptPreKeyWhisperMessage = co.wrap(function*(fromIdentity, message) {
+        var session;
+        if (sessionFactory.hasSessionForIdentity(fromIdentity)) {
+            session = sessionFactory.getSessionForIdentity(fromIdentity);
+        } else {
+            session = yield sessionFactory.createSessionFromPreKeyWhisperMessage(fromIdentity, message);
+        }
+        return yield session.decryptPreKeyWhisperMessage(message);
+    });
 
     Object.freeze(self);
 }
+
+Axolotl.PreKeyWhisperMessage = MessageTypes.PreKeyWhisperMessage;
+Axolotl.WhisperMessage = MessageTypes.WhisperMessage;
 
 export default Axolotl;

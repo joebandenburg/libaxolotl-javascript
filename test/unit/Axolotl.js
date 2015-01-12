@@ -3,7 +3,17 @@ import sinon from "sinon";
 import co from "co";
 
 import Axolotl from "../../src/Axolotl";
-import SessionFactory from "../../src/SessionFactory";
+import ArrayBufferUtils from "../../src/ArrayBufferUtils";
+import ProtocolConstants from "../../src/ProtocolConstants";
+import Messages from "../../src/Messages";
+import {
+    UnsupportedProtocolVersionException,
+    ConcurrentUseException,
+    InvalidKeyException,
+    InvalidMessageException,
+    DuplicateMessageException
+} from "../../src/Exceptions";
+import crypto from "./FakeCrypto";
 
 var assert = chai.assert;
 
@@ -125,11 +135,275 @@ describe("Axolotl", () => {
                 assert.ok([101, 10], crypto.sign.firstCall.args);
             }));
         });
-        describe("createSessionFactory", () => {
-            it("returns a session factory", () => {
-                var result = axolotl.createSessionFactory({});
-                assert.instanceOf(result, SessionFactory);
-            });
+    });
+    describe("communication", () => {
+        var aliceIdentity = "alice";
+        var bobIdentity = "bob";
+
+        var aliceIdentityKeyPair;
+        var bobIdentityKeyPair;
+        var bobSignedPreKeyPair;
+        var bobOneTimePreKeyPair;
+
+        var bobPreKeyBundle;
+
+        var aliceSessions;
+        var bobSessions;
+
+        var aliceAxolotl;
+        var bobAxolotl;
+
+        var createEncryptedMessage = co.wrap(function*(sendingAxolotl, receivingIdentity) {
+            var plaintext = crypto.randomBytes(10);
+            return {
+                plaintext: plaintext,
+                ciphertext: yield sendingAxolotl.encryptMessage(receivingIdentity, plaintext)
+            };
         });
+
+        var decryptMessage = co.wrap(function*(receivingAxolotl, sendingIdentity, message) {
+            if (message.ciphertext.type === Axolotl.PreKeyWhisperMessage) {
+                return yield receivingAxolotl.decryptPreKeyWhisperMessage(sendingIdentity, message.ciphertext.body);
+            } else {
+                return yield receivingAxolotl.decryptWhisperMessage(sendingIdentity, message.ciphertext.body);
+            }
+        });
+
+        var assertMessageIsDecryptedCorrectly = co.wrap(function*(receivingAxolotl, sendingIdentity, message) {
+            var actualPlaintext = yield decryptMessage(receivingAxolotl, sendingIdentity, message);
+            assert.ok(ArrayBufferUtils.areEqual(message.plaintext, actualPlaintext));
+        });
+
+        var assertSessionsCanCommunicateOneWay = co.wrap(function*(sendingAxolotl, receivingAxolotl, sendingIdentity,
+                                                                   receivingIdentity) {
+            var message = yield createEncryptedMessage(sendingAxolotl, receivingIdentity);
+            yield assertMessageIsDecryptedCorrectly(receivingAxolotl, sendingIdentity, message);
+        });
+
+        var assertAliceCanSendMessageToBob = co.wrap(function*() {
+            yield assertSessionsCanCommunicateOneWay(aliceAxolotl, bobAxolotl, aliceIdentity, bobIdentity);
+        });
+
+        var assertBobCanSendMessageToAlice = co.wrap(function*() {
+            yield assertSessionsCanCommunicateOneWay(bobAxolotl, aliceAxolotl, bobIdentity, aliceIdentity);
+        });
+
+        var assertSessionsCanCommunicateTwoWay = co.wrap(function*() {
+            yield assertAliceCanSendMessageToBob();
+            yield assertBobCanSendMessageToAlice();
+        });
+
+        beforeEach(co.wrap(function*() {
+            crypto.validSiganture = true;
+
+            aliceSessions = {};
+            bobSessions = {};
+
+            aliceAxolotl = new Axolotl(crypto, {
+                getIdentityKeyPair: () => aliceIdentityKeyPair,
+                getLocalRegistrationId: () => 666,
+                getPreKeyBundle: (identity) => {
+                    assert.equal(identity, bobIdentity);
+                    return Promise.resolve(bobPreKeyBundle);
+                },
+                hasSession: (identity) => {
+                    return !!aliceSessions[identity];
+                },
+                getSession: (identity) => {
+                    return aliceSessions[identity];
+                },
+                putSession: (identity, session) => {
+                    aliceSessions[identity] = session;
+                }
+            });
+            bobAxolotl = new Axolotl(crypto, {
+                getIdentityKeyPair: () => bobIdentityKeyPair,
+                getLocalRegistrationId: () => 667,
+                getSignedPreKeyPair: (id) => {
+                    assert.equal(id, 5);
+                    return bobSignedPreKeyPair;
+                },
+                getPreKeyPair: (id) => {
+                    assert.equal(id, 31337);
+                    return bobOneTimePreKeyPair;
+                },
+                hasSession: (identity) => {
+                    return !!bobSessions[identity];
+                },
+                getSession: (identity) => {
+                    return bobSessions[identity];
+                },
+                putSession: (identity, session) => {
+                    bobSessions[identity] = session;
+                }
+            });
+
+            aliceIdentityKeyPair = yield crypto.generateKeyPair();
+            bobIdentityKeyPair = yield crypto.generateKeyPair();
+            bobSignedPreKeyPair = yield crypto.generateKeyPair();
+            bobOneTimePreKeyPair = yield crypto.generateKeyPair();
+            var signature = yield crypto.sign(bobIdentityKeyPair.private, bobSignedPreKeyPair.public);
+
+            bobPreKeyBundle = {
+                registrationId: 3,
+                deviceId: 4,
+                preKey: null,
+                preKeyId: null,
+                signedPreKey: bobSignedPreKeyPair.public,
+                signedPreKeyId: 5,
+                signedPreKeySignature: signature,
+                identityKey: bobIdentityKeyPair.public
+            };
+        }));
+
+        // Use smaller protocol parameters to keep the tests fast
+        var maximumMissedMessages;
+        beforeEach(() => {
+            maximumMissedMessages = ProtocolConstants.maximumMissedMessages;
+            ProtocolConstants.maximumMissedMessages = 20;
+        });
+        afterEach(() => {
+            ProtocolConstants.maximumMissedMessages = maximumMissedMessages;
+        });
+
+        it("accepts a simple exchange", co.wrap(function*() {
+            yield assertSessionsCanCommunicateTwoWay();
+        }));
+        it("accepts multiple messages sent by one party", co.wrap(function*() {
+            yield assertAliceCanSendMessageToBob();
+            yield assertAliceCanSendMessageToBob();
+        }));
+        it("accepts out of order message delivery (sub ratchet)", co.wrap(function*() {
+            var ciphertext1 = yield createEncryptedMessage(aliceAxolotl, bobIdentity);
+            var ciphertext2 = yield createEncryptedMessage(aliceAxolotl, bobIdentity);
+
+            yield assertMessageIsDecryptedCorrectly(bobAxolotl, aliceIdentity, ciphertext2);
+            yield assertMessageIsDecryptedCorrectly(bobAxolotl, aliceIdentity, ciphertext1);
+        }));
+        it("accepts a complicated message exchange", co.wrap(function*() {
+            yield assertSessionsCanCommunicateTwoWay();
+            yield assertSessionsCanCommunicateTwoWay();
+
+            var i;
+            for (i = 0; i < 10; i++) {
+                yield assertAliceCanSendMessageToBob();
+            }
+
+            for (i = 0; i < 10; i++) {
+                yield assertBobCanSendMessageToAlice();
+            }
+
+            var aliceOutOfOrderMessages = [];
+            for (i = 0; i < 10; i++) {
+                aliceOutOfOrderMessages.push(yield createEncryptedMessage(aliceAxolotl, bobIdentity));
+            }
+
+            for (i = 0; i < 10; i++) {
+                yield assertAliceCanSendMessageToBob();
+            }
+
+            for (i = 0; i < 10; i++) {
+                yield assertBobCanSendMessageToAlice();
+            }
+
+            for (i = 0; i < 10; i++) {
+                var ciphertext = aliceOutOfOrderMessages[i];
+                yield assertMessageIsDecryptedCorrectly(bobAxolotl, aliceIdentity, ciphertext);
+            }
+        }));
+        it("rejects messages that come after too many dropped messages", co.wrap(function*() {
+            yield assertSessionsCanCommunicateTwoWay();
+            yield assertSessionsCanCommunicateTwoWay();
+
+            for (var i = 0; i < ProtocolConstants.maximumMissedMessages + 1; i++) {
+                yield createEncryptedMessage(aliceAxolotl, bobIdentity);
+            }
+
+            var ciphertext = yield createEncryptedMessage(aliceAxolotl, bobIdentity);
+            yield assert.isRejected(decryptMessage(bobAxolotl, aliceIdentity, ciphertext), InvalidMessageException);
+        }));
+        it("rejects duplicate message delivery", co.wrap(function*() {
+            var ciphertext = yield createEncryptedMessage(aliceAxolotl, bobIdentity);
+
+            yield assertMessageIsDecryptedCorrectly(bobAxolotl, aliceIdentity, ciphertext);
+            yield assert.isRejected(decryptMessage(bobAxolotl, aliceIdentity, ciphertext), DuplicateMessageException);
+        }));
+        it("rejects message with bad mac", co.wrap(function*() {
+            var ciphertext = yield createEncryptedMessage(aliceAxolotl, bobIdentity);
+            // Corrupt the mac
+            new Uint8Array(ciphertext.ciphertext.body)[ciphertext.ciphertext.body.byteLength - 1]++;
+            yield assert.isRejected(decryptMessage(bobAxolotl, aliceIdentity, ciphertext), InvalidMessageException);
+        }));
+        it("rejects bad signedPreKey signature", co.wrap(function*() {
+            crypto.validSiganture = false;
+            yield assert.isRejected(createEncryptedMessage(aliceAxolotl, bobIdentity), InvalidKeyException);
+        }));
+        it("rejects preKeyBundle if neither preKey nor signedPreKey are present", co.wrap(function*() {
+            delete bobPreKeyBundle.signedPreKey;
+            yield assert.isRejected(createEncryptedMessage(aliceAxolotl, bobIdentity), InvalidKeyException);
+        }));
+        it("accepts optional oneTimePreKey", co.wrap(function*() {
+            bobPreKeyBundle.preKey = bobOneTimePreKeyPair.public;
+            bobPreKeyBundle.preKeyId = 31337;
+            yield assertSessionsCanCommunicateTwoWay();
+            yield assertSessionsCanCommunicateTwoWay();
+        }));
+        it("rejects concurrent encryptMessage", co.wrap(function*() {
+            createEncryptedMessage(aliceAxolotl, bobIdentity);
+            yield assert.isRejected(createEncryptedMessage(aliceAxolotl, bobIdentity), ConcurrentUseException);
+        }));
+        it("rejects concurrent decryptPreKeyMessage", co.wrap(function*() {
+            var ciphertext = yield createEncryptedMessage(aliceAxolotl, bobIdentity);
+            decryptMessage(bobAxolotl, aliceIdentity, ciphertext);
+            yield assert.isRejected(decryptMessage(bobAxolotl, aliceIdentity, ciphertext), ConcurrentUseException);
+        }));
+        it("rejects concurrent decryptMessage", co.wrap(function*() {
+            yield assertSessionsCanCommunicateTwoWay();
+            yield assertSessionsCanCommunicateTwoWay();
+            var ciphertext = yield createEncryptedMessage(aliceAxolotl, bobIdentity);
+            decryptMessage(bobAxolotl, aliceIdentity, ciphertext);
+            yield assert.isRejected(decryptMessage(bobAxolotl, aliceIdentity, ciphertext), ConcurrentUseException);
+        }));
+        it("rejects version 2 of PreKeyWhisperMessage", co.wrap(function*() {
+            var message = Messages.encodePreKeyWhisperMessage({
+                version: {
+                    current: 2,
+                    max: 3
+                },
+                message: {}
+            });
+            yield assert.isRejected(bobAxolotl.decryptPreKeyWhisperMessage(aliceIdentity, message),
+                UnsupportedProtocolVersionException);
+        }));
+        it("accepts out of order message delivery (main ratchet)", co.wrap(function*() {
+            yield assertSessionsCanCommunicateTwoWay();
+            yield assertSessionsCanCommunicateTwoWay();
+
+            var ciphertext = yield createEncryptedMessage(aliceAxolotl, bobIdentity);
+
+            for (var i = 0; i < ProtocolConstants.maximumRetainedReceivedChainKeys; i++) {
+                yield assertSessionsCanCommunicateTwoWay();
+            }
+
+            yield assertMessageIsDecryptedCorrectly(bobAxolotl, aliceIdentity, ciphertext);
+        }));
+        it("rejects messages that are too far out of order (main ratchet)", co.wrap(function*() {
+            yield assertSessionsCanCommunicateTwoWay();
+            yield assertSessionsCanCommunicateTwoWay();
+
+            var ciphertext = yield createEncryptedMessage(aliceAxolotl, bobIdentity);
+
+            for (var i = 0; i < ProtocolConstants.maximumRetainedReceivedChainKeys + 1; i++) {
+                yield assertSessionsCanCommunicateTwoWay();
+            }
+
+            yield assert.isRejected(decryptMessage(bobAxolotl, aliceIdentity, ciphertext), InvalidMessageException);
+        }));
+        it("rejects whisper messages without pre-existing session", co.wrap(function*() {
+            yield assertSessionsCanCommunicateTwoWay();
+            yield assertSessionsCanCommunicateTwoWay();
+            var ciphertext = yield createEncryptedMessage(aliceAxolotl, bobIdentity);
+            yield assert.isRejected(decryptMessage(bobAxolotl, "eve", ciphertext), InvalidMessageException);
+        }));
     });
 });

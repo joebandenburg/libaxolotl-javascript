@@ -18,6 +18,7 @@
 import ArrayBufferUtils from "./ArrayBufferUtils";
 import ProtocolConstants from "./ProtocolConstants";
 import Messages from "./Messages";
+import MessageTypes from "./MessageTypes";
 import Ratchet from "./Ratchet";
 import {InvalidMessageException, DuplicateMessageException, ConcurrentUseException} from "./Exceptions";
 import co from "co";
@@ -37,18 +38,24 @@ function Session(crypto, sessionState) {
         //sessionState.save();
 
         if (sessionState.pendingPreKey) {
-            return createPreKeyWhisperMessage(whisperMessage);
+            return {
+                type: MessageTypes.PreKeyWhisperMessage,
+                body: createPreKeyWhisperMessage(whisperMessage)
+            };
         } else {
-            return whisperMessage;
+            return {
+                type: MessageTypes.WhisperMessage,
+                body: whisperMessage
+            };
         }
     }));
 
-    self.decryptPreKeyMessage = (preKeyWhisperMessageBytes) => {
+    self.decryptPreKeyWhisperMessage = (preKeyWhisperMessageBytes) => {
         var preKeyWhisperMessage = Messages.decodePreKeyWhisperMessage(preKeyWhisperMessageBytes);
-        return self.decryptMessage(preKeyWhisperMessage.message.message);
+        return self.decryptWhisperMessage(preKeyWhisperMessage.message.message);
     };
 
-    self.decryptMessage = withLock(co.wrap(function*(whisperMessageBytes) {
+    self.decryptWhisperMessage = withLock(co.wrap(function*(whisperMessageBytes) {
         var whisperMessage = Messages.decodeWhisperMessage(whisperMessageBytes);
         var macInputTypes = Messages.decodeWhisperMessageMacInput(whisperMessageBytes);
 
