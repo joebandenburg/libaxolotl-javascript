@@ -348,21 +348,19 @@ describe("Axolotl", () => {
             yield assertSessionsCanCommunicateTwoWay();
             yield assertSessionsCanCommunicateTwoWay();
         }));
-        it("rejects concurrent encryptMessage", co.wrap(function*() {
+        it("queues and eventually completes concurrent encryptMessage", co.wrap(function*() {
             createEncryptedMessage(aliceAxolotl, bobIdentity);
-            yield assert.isRejected(createEncryptedMessage(aliceAxolotl, bobIdentity), ConcurrentUseException);
+            yield assertAliceCanSendMessageToBob();
         }));
-        it("rejects concurrent decryptPreKeyMessage", co.wrap(function*() {
-            var ciphertext = yield createEncryptedMessage(aliceAxolotl, bobIdentity);
-            decryptMessage(bobAxolotl, aliceIdentity, ciphertext);
-            yield assert.isRejected(decryptMessage(bobAxolotl, aliceIdentity, ciphertext), ConcurrentUseException);
+        it("queues and eventually completes concurrent decryptPreKeyWhisperMessage", co.wrap(function*() {
+            assertAliceCanSendMessageToBob();
+            yield assertAliceCanSendMessageToBob();
         }));
-        it("rejects concurrent decryptMessage", co.wrap(function*() {
+        it("queues and eventually completes concurrent decryptWhisperMessage", co.wrap(function*() {
             yield assertSessionsCanCommunicateTwoWay();
             yield assertSessionsCanCommunicateTwoWay();
-            var ciphertext = yield createEncryptedMessage(aliceAxolotl, bobIdentity);
-            decryptMessage(bobAxolotl, aliceIdentity, ciphertext);
-            yield assert.isRejected(decryptMessage(bobAxolotl, aliceIdentity, ciphertext), ConcurrentUseException);
+            assertAliceCanSendMessageToBob();
+            yield assertAliceCanSendMessageToBob();
         }));
         it("rejects version 2 of PreKeyWhisperMessage", co.wrap(function*() {
             var message = Messages.encodePreKeyWhisperMessage({

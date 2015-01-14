@@ -20,7 +20,7 @@ import ProtocolConstants from "./ProtocolConstants";
 import Messages from "./Messages";
 import MessageTypes from "./MessageTypes";
 import Ratchet from "./Ratchet";
-import {InvalidMessageException, DuplicateMessageException, ConcurrentUseException} from "./Exceptions";
+import {InvalidMessageException, DuplicateMessageException} from "./Exceptions";
 import co from "co";
 
 function Session(crypto, sessionState) {
@@ -28,9 +28,7 @@ function Session(crypto, sessionState) {
 
     const ratchet = new Ratchet(crypto);
 
-    var isLocked = false;
-
-    self.encryptMessage = withLock(co.wrap(function*(paddedMessage) {
+    self.encryptMessage = queued(co.wrap(function*(paddedMessage) {
         var whisperMessage = yield createWhisperMessage(paddedMessage);
 
         // TODO: Order of operations important here? Exception safety?
@@ -55,7 +53,7 @@ function Session(crypto, sessionState) {
         return self.decryptWhisperMessage(preKeyWhisperMessage.message.message);
     };
 
-    self.decryptWhisperMessage = withLock(co.wrap(function*(whisperMessageBytes) {
+    self.decryptWhisperMessage = queued(co.wrap(function*(whisperMessageBytes) {
         var whisperMessage = Messages.decodeWhisperMessage(whisperMessageBytes);
         var macInputTypes = Messages.decodeWhisperMessageMacInput(whisperMessageBytes);
 
@@ -83,19 +81,16 @@ function Session(crypto, sessionState) {
         return plaintext;
     }));
 
-    function withLock(fn) {
+    var lastOpPromise = Promise.resolve();
+
+    function queued(fn) {
         return function() {
-            if (isLocked) {
-                return Promise.reject(new ConcurrentUseException("Another operation is already in progress"));
-            }
-            isLocked = true;
-            return fn.apply(self, arguments).then(function(result) {
-                isLocked = false;
-                return result;
-            }, function(error) {
-                isLocked = false;
-                return Promise.reject(error);
-            });
+            var boundFn = () => {
+                return fn.apply(self, arguments);
+            };
+            // Note we also perform the next op even if the previous op failed
+            lastOpPromise = lastOpPromise.then(boundFn, boundFn);
+            return lastOpPromise;
         };
     }
 

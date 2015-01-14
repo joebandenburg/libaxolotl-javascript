@@ -19,4 +19,3 @@ export class InvalidMessageException extends Error {}
 export class DuplicateMessageException extends Error {}
 export class InvalidKeyException extends Error {}
 export class UnsupportedProtocolVersionException extends Error {}
-export class ConcurrentUseException extends Error {}
