@@ -32,9 +32,8 @@ function Session(crypto, sessionStateList) {
     self.encryptMessage = queued(co.wrap(function*(paddedMessage) {
         var whisperMessage = yield createWhisperMessage(paddedMessage);
 
-        // TODO: Order of operations important here? Exception safety?
         yield ratchet.clickSubRatchet(sessionStateList.mostRecentSession().sendingChain);
-        //sessionState.save();
+        sessionStateList.save();
 
         if (sessionStateList.mostRecentSession().pendingPreKey) {
             return {
@@ -65,6 +64,7 @@ function Session(crypto, sessionStateList) {
             if (result !== undefined) {
                 sessionStateList.removeSessionState(sessionState);
                 sessionStateList.addSessionState(clonedSessionState);
+                sessionStateList.save();
                 return result;
             }
         }

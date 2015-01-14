@@ -42,4 +42,20 @@ describe("ArrayBufferUtils", () => {
             assert.ok(ArrayBufferUtils.areEqual(expected, actual));
         });
     });
+    describe("stringify", () => {
+        it("converts an arrayBuffer to a string", () => {
+            var buffer = new Uint8Array([48, 99, 21, 170, 191, 5]).buffer;
+            var expected = "306315aabf05";
+            var actual = ArrayBufferUtils.stringify(buffer);
+            assert.equal(actual, expected);
+        });
+    });
+    describe("parse", () => {
+        it("converts a string to an arrayBuffer", () => {
+            var string = "306315aabf05";
+            var expected = new Uint8Array([48, 99, 21, 170, 191, 5]).buffer;
+            var actual = ArrayBufferUtils.parse(string);
+            assert.ok(ArrayBufferUtils.areEqual(actual, expected));
+        });
+    });
 });

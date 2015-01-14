@@ -16,26 +16,51 @@
  */
 
 import ProtocolConstants from "./ProtocolConstants";
+import ArrayBufferUtils from "./ArrayBufferUtils";
 
-export default class SessionStateList {
-    constructor() {
-        this.sessions = [];
-        Object.seal(this);
+function SessionStateList(sessionPersistor, serialisedState) {
+    var self = this;
+
+    var sessions = [];
+    if (serialisedState) {
+        sessions = JSON.parse(serialisedState, (key, value) => {
+            if (typeof value === "string" && value.substring(0, 5) === "{{ab:") {
+                return ArrayBufferUtils.parse(value.substring(5, value.length - 2));
+            }
+            return value;
+        });
     }
 
-    mostRecentSession() {
-        return this.sessions[0];
-    }
+    Object.defineProperty(self, "sessions", {
+        get: () => sessions
+    });
 
-    addSessionState(sessionState) {
-        this.sessions.unshift(sessionState);
-        if (this.sessions.length > ProtocolConstants.maximumSessionsPerIdentity) {
-            this.sessions.pop();
+    self.mostRecentSession = () => {
+        return sessions[0];
+    };
+
+    self.addSessionState = (sessionState) => {
+        sessions.unshift(sessionState);
+        if (sessions.length > ProtocolConstants.maximumSessionsPerIdentity) {
+            sessions.pop();
         }
-    }
+    };
 
-    removeSessionState(sessionState) {
-        var index = this.sessions.indexOf(sessionState);
-        this.sessions.splice(index, 1);
-    }
+    self.removeSessionState = (sessionState) => {
+        var index = sessions.indexOf(sessionState);
+        sessions.splice(index, 1);
+    };
+
+    self.save = () => {
+        sessionPersistor(JSON.stringify(sessions, (key, value) => {
+            if (value instanceof ArrayBuffer) {
+                return "{{ab:" + ArrayBufferUtils.stringify(value) + "}}";
+            }
+            return value;
+        }));
+    };
+
+    Object.freeze(this);
 }
+
+export default SessionStateList;

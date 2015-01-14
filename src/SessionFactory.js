@@ -68,9 +68,11 @@ function SessionFactory(crypto, store) {
             baseKey: ourBaseKeyPair.public
         };
         sessionState.localRegistrationId = store.getLocalRegistrationId();
-        var sessionStateList = new SessionStateList();
+        var sessionStateList = new SessionStateList((serialisedState) => {
+            store.putSession(toIdentity, serialisedState);
+        });
         sessionStateList.addSessionState(sessionState);
-        store.putSession(toIdentity, sessionStateList);
+        sessionStateList.save();
         return self.getSessionForIdentity(toIdentity);
     });
 
@@ -102,9 +104,9 @@ function SessionFactory(crypto, store) {
         };
 
         var sessionState = yield initializeBobSession(bobParameters);
-        var sessionStateList = store.hasSession(fromIdentity) ? store.getSession(fromIdentity) : new SessionStateList();
+        var sessionStateList = getSessionStateListForIdentity(fromIdentity).sessionStateList;
         sessionStateList.addSessionState(sessionState);
-        store.putSession(fromIdentity, sessionStateList);
+        sessionStateList.save();
         return self.getSessionForIdentity(fromIdentity);
     });
 
@@ -116,11 +118,22 @@ function SessionFactory(crypto, store) {
         return store.hasSession(identity);
     };
 
-    self.getSessionForIdentity = (identity) => {
+    var getSessionStateListForIdentity = (identity) => {
         if (!sessionCache[identity]) {
-            sessionCache[identity] = new Session(crypto, store.getSession(identity));
+            var serialisedSessionStateList = store.getSession(identity);
+            var sessionStateList = new SessionStateList((serialisedState) => {
+                store.putSession(identity, serialisedState);
+            }, serialisedSessionStateList);
+            sessionCache[identity] = {
+                sessionStateList: sessionStateList,
+                session: new Session(crypto, sessionStateList)
+            };
         }
         return sessionCache[identity];
+    };
+
+    self.getSessionForIdentity = (identity) => {
+        return getSessionStateListForIdentity(identity).session;
     };
 
     var initializeAliceSession = co.wrap(function*(parameters) {

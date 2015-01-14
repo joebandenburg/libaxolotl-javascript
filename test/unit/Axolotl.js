@@ -1,4 +1,5 @@
 import chai from "chai";
+import chaiAsPromised from "chai-as-promised";
 import sinon from "sinon";
 import co from "co";
 
@@ -15,6 +16,7 @@ import {
 } from "../../src/Exceptions";
 import crypto from "./FakeCrypto";
 
+chai.use(chaiAsPromised);
 var assert = chai.assert;
 
 describe("Axolotl", () => {
@@ -152,6 +154,8 @@ describe("Axolotl", () => {
         var aliceSessions;
         var bobSessions;
 
+        var aliceStore;
+
         var aliceAxolotl;
         var bobAxolotl;
 
@@ -201,7 +205,7 @@ describe("Axolotl", () => {
             aliceSessions = {};
             bobSessions = {};
 
-            aliceAxolotl = new Axolotl(crypto, {
+            aliceStore = {
                 getIdentityKeyPair: () => aliceIdentityKeyPair,
                 getLocalRegistrationId: () => 666,
                 getPreKeyBundle: (identity) => {
@@ -221,7 +225,9 @@ describe("Axolotl", () => {
                 putSession: (identity, session) => {
                     aliceSessions[identity] = session;
                 }
-            });
+            };
+
+            aliceAxolotl = new Axolotl(crypto, aliceStore);
             bobAxolotl = new Axolotl(crypto, {
                 getIdentityKeyPair: () => bobIdentityKeyPair,
                 getLocalRegistrationId: () => 667,
@@ -482,6 +488,18 @@ describe("Axolotl", () => {
 
                 yield assertSessionsCanCommunicateTwoWay();
                 yield assertSessionsCanCommunicateTwoWay();
+            }));
+        });
+        describe("persistence", () => {
+            it("loads old sessions from the store", co.wrap(function*() {
+                yield assertSessionsCanCommunicateTwoWay();
+                yield assertSessionsCanCommunicateTwoWay();
+
+                var aliceAxolotl2 = new Axolotl(crypto, aliceStore);
+                var ciphertext = yield createEncryptedMessage(aliceAxolotl2, bobIdentity);
+
+                assert.equal(ciphertext.ciphertext.type, Axolotl.WhisperMessage);
+                yield assertMessageIsDecryptedCorrectly(bobAxolotl, aliceIdentity, ciphertext);
             }));
         });
     });

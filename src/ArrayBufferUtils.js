@@ -46,5 +46,25 @@ export default {
         }
         return newBuffer;
     },
-    fromByte: (byte) => new Uint8Array([byte]).buffer
+    fromByte: (byte) => new Uint8Array([byte]).buffer,
+    stringify: (buffer) => {
+        var string = "";
+        var view = new Uint8Array(buffer);
+        for (var i = 0; i < buffer.byteLength; i++) {
+            var byte = view[i].toString(16);
+            if (byte.length === 1) {
+                string += "0";
+            }
+            string += byte;
+        }
+        return string;
+    },
+    parse: (string) => {
+        var buffer = new ArrayBuffer(string.length / 2);
+        var view = new Uint8Array(buffer);
+        for (var i = 0; i < string.length; i += 2) {
+            view[i / 2] = parseInt(string[i], 16) * 16 + parseInt(string[i + 1], 16);
+        }
+        return buffer;
+    }
 };
