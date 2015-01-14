@@ -19,11 +19,12 @@ import ArrayBufferUtils from "./ArrayBufferUtils";
 import ProtocolConstants from "./ProtocolConstants";
 import Messages from "./Messages";
 import MessageTypes from "./MessageTypes";
+import SessionState from "./SessionState";
 import Ratchet from "./Ratchet";
 import {InvalidMessageException, DuplicateMessageException} from "./Exceptions";
 import co from "co";
 
-function Session(crypto, sessionState) {
+function Session(crypto, sessionStateList) {
     const self = this;
 
     const ratchet = new Ratchet(crypto);
@@ -32,10 +33,10 @@ function Session(crypto, sessionState) {
         var whisperMessage = yield createWhisperMessage(paddedMessage);
 
         // TODO: Order of operations important here? Exception safety?
-        yield ratchet.clickSubRatchet(sessionState.sendingChain);
+        yield ratchet.clickSubRatchet(sessionStateList.mostRecentSession().sendingChain);
         //sessionState.save();
 
-        if (sessionState.pendingPreKey) {
+        if (sessionStateList.mostRecentSession().pendingPreKey) {
             return {
                 type: MessageTypes.PreKeyWhisperMessage,
                 body: createPreKeyWhisperMessage(whisperMessage)
@@ -54,6 +55,24 @@ function Session(crypto, sessionState) {
     };
 
     self.decryptWhisperMessage = queued(co.wrap(function*(whisperMessageBytes) {
+        var exceptions = [];
+        for (var sessionState of sessionStateList.sessions) {
+            var clonedSessionState = new SessionState(sessionState);
+            var promise = decryptWhisperMessageWithSessionState(clonedSessionState, whisperMessageBytes);
+            var result = yield promise.catch((e) => {
+                exceptions.push(e);
+            });
+            if (result !== undefined) {
+                sessionStateList.removeSessionState(sessionState);
+                sessionStateList.addSessionState(clonedSessionState);
+                return result;
+            }
+        }
+        var messages = exceptions.map((e) => e.toString());
+        throw new InvalidMessageException("Unable to decrypt message: " + messages);
+    }));
+
+    var decryptWhisperMessageWithSessionState = co.wrap(function*(sessionState, whisperMessageBytes) {
         var whisperMessage = Messages.decodeWhisperMessage(whisperMessageBytes);
         var macInputTypes = Messages.decodeWhisperMessageMacInput(whisperMessageBytes);
 
@@ -64,7 +83,7 @@ function Session(crypto, sessionState) {
         var message = whisperMessage.message;
         var theirEphemeralPublicKey = message.ratchetKey;
 
-        var receivingChain = yield getOrCreateReceivingChainKey(theirEphemeralPublicKey);
+        var receivingChain = yield getOrCreateReceivingChainKey(sessionState, theirEphemeralPublicKey);
         var messageKeys = yield getOrCreateMessageKeys(theirEphemeralPublicKey, receivingChain, message.counter);
         var isValid = yield isValidMac(macInputTypes, messageKeys.macKey, whisperMessage.version.current,
             sessionState.remoteIdentityKey, sessionState.localIdentityKey, whisperMessage.mac);
@@ -79,7 +98,7 @@ function Session(crypto, sessionState) {
         sessionState.pendingPreKey = null;
 
         return plaintext;
-    }));
+    });
 
     var lastOpPromise = Promise.resolve();
 
@@ -107,18 +126,18 @@ function Session(crypto, sessionState) {
     });
 
     var createWhisperMessage = co.wrap(function*(paddedMessage) {
-        var messageKeys = yield ratchet.deriveMessageKeys(sessionState.sendingChain.key);
+        var messageKeys = yield ratchet.deriveMessageKeys(sessionStateList.mostRecentSession().sendingChain.key);
         // TODO: Should use CTR mode in version 2 of protocol
         var ciphertext = yield crypto.encrypt(messageKeys.cipherKey, paddedMessage, messageKeys.iv);
 
         var version = {
-            current: sessionState.sessionVersion,
+            current: sessionStateList.mostRecentSession().sessionVersion,
             max: ProtocolConstants.currentVersion
         };
         var message = {
-            ratchetKey: sessionState.senderRatchetKeyPair.public,
-            counter: sessionState.sendingChain.index,
-            previousCounter: sessionState.previousCounter,
+            ratchetKey: sessionStateList.mostRecentSession().senderRatchetKeyPair.public,
+            counter: sessionStateList.mostRecentSession().sendingChain.index,
+            previousCounter: sessionStateList.mostRecentSession().previousCounter,
             ciphertext: ciphertext
         };
         var macInputBytes = Messages.encodeWhisperMessageMacInput({
@@ -129,37 +148,38 @@ function Session(crypto, sessionState) {
         return Messages.encodeWhisperMessage({
             version: version,
             message: message,
-            mac: yield getMac(macInputBytes, messageKeys.macKey, sessionState.sessionVersion,
-                sessionState.localIdentityKey, sessionState.remoteIdentityKey)
+            mac: yield getMac(macInputBytes, messageKeys.macKey, sessionStateList.mostRecentSession().sessionVersion,
+                sessionStateList.mostRecentSession().localIdentityKey,
+                sessionStateList.mostRecentSession().remoteIdentityKey)
         });
     });
 
     var createPreKeyWhisperMessage = (whisperMessage) => {
-        var pendingPreKey = sessionState.pendingPreKey;
+        var pendingPreKey = sessionStateList.mostRecentSession().pendingPreKey;
         return Messages.encodePreKeyWhisperMessage({
             version: {
-                current: sessionState.sessionVersion,
+                current: sessionStateList.mostRecentSession().sessionVersion,
                 max: ProtocolConstants.currentVersion
             },
             message: {
-                registrationId: sessionState.localRegistrationId,
+                registrationId: sessionStateList.mostRecentSession().localRegistrationId,
                 preKeyId: pendingPreKey.preKeyId,
                 signedPreKeyId: pendingPreKey.signedPreKeyId,
                 baseKey: pendingPreKey.baseKey,
-                identityKey: sessionState.localIdentityKey,
+                identityKey: sessionStateList.mostRecentSession().localIdentityKey,
                 message: whisperMessage
             }
         });
     };
 
-    var getOrCreateReceivingChainKey = co.wrap(function*(theirEphemeralPublicKey) {
+    var getOrCreateReceivingChainKey = co.wrap(function*(sessionState, theirEphemeralPublicKey) {
         // If they've sent us multiple messages before we've replied, then we'll see their ephemeral key more than once
         var chain = sessionState.findReceivingChain(theirEphemeralPublicKey);
         if (chain) {
             return chain;
         }
         // This is the first message in a new chain
-        return yield clickMainRatchet(theirEphemeralPublicKey);
+        return yield clickMainRatchet(sessionState, theirEphemeralPublicKey);
     });
 
     var getOrCreateMessageKeys = co.wrap(function*(theirEphemeralPublicKey, chain, counter) {
@@ -185,7 +205,7 @@ function Session(crypto, sessionState) {
 
     // "clicks" the DH ratchet two steps forwards. Once to catch up with the other party and once
     // again to get one click ahead.
-    var clickMainRatchet = co.wrap(function*(theirEphemeralPublicKey) {
+    var clickMainRatchet = co.wrap(function*(sessionState, theirEphemeralPublicKey) {
         var nextReceivingChain = yield ratchet.deriveNewRootAndChainKeys(sessionState.rootKey, theirEphemeralPublicKey,
             sessionState.senderRatchetKeyPair.private);
         var ourNewEphemeralKeyPair = yield crypto.generateKeyPair();

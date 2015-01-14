@@ -141,10 +141,12 @@ describe("Axolotl", () => {
         var bobIdentity = "bob";
 
         var aliceIdentityKeyPair;
+        var aliceSignedPreKeyPair;
         var bobIdentityKeyPair;
         var bobSignedPreKeyPair;
         var bobOneTimePreKeyPair;
 
+        var alicePreKeyBundle;
         var bobPreKeyBundle;
 
         var aliceSessions;
@@ -206,6 +208,10 @@ describe("Axolotl", () => {
                     assert.equal(identity, bobIdentity);
                     return Promise.resolve(bobPreKeyBundle);
                 },
+                getSignedPreKeyPair: (id) => {
+                    assert.equal(id, 6);
+                    return aliceSignedPreKeyPair;
+                },
                 hasSession: (identity) => {
                     return !!aliceSessions[identity];
                 },
@@ -219,6 +225,10 @@ describe("Axolotl", () => {
             bobAxolotl = new Axolotl(crypto, {
                 getIdentityKeyPair: () => bobIdentityKeyPair,
                 getLocalRegistrationId: () => 667,
+                getPreKeyBundle: (identity) => {
+                    assert.equal(identity, aliceIdentity);
+                    return Promise.resolve(alicePreKeyBundle);
+                },
                 getSignedPreKeyPair: (id) => {
                     assert.equal(id, 5);
                     return bobSignedPreKeyPair;
@@ -239,10 +249,22 @@ describe("Axolotl", () => {
             });
 
             aliceIdentityKeyPair = yield crypto.generateKeyPair();
+            aliceSignedPreKeyPair = yield crypto.generateKeyPair();
             bobIdentityKeyPair = yield crypto.generateKeyPair();
             bobSignedPreKeyPair = yield crypto.generateKeyPair();
             bobOneTimePreKeyPair = yield crypto.generateKeyPair();
             var signature = yield crypto.sign(bobIdentityKeyPair.private, bobSignedPreKeyPair.public);
+
+            alicePreKeyBundle = {
+                registrationId: 666,
+                deviceId: 4,
+                preKey: null,
+                preKeyId: null,
+                signedPreKey: aliceSignedPreKeyPair.public,
+                signedPreKeyId: 6,
+                signedPreKeySignature: null,
+                identityKey: aliceIdentityKeyPair.public
+            };
 
             bobPreKeyBundle = {
                 registrationId: 3,
@@ -322,11 +344,20 @@ describe("Axolotl", () => {
             var ciphertext = yield createEncryptedMessage(aliceAxolotl, bobIdentity);
             yield assert.isRejected(decryptMessage(bobAxolotl, aliceIdentity, ciphertext), InvalidMessageException);
         }));
-        it("rejects duplicate message delivery", co.wrap(function*() {
+        it("accepts duplicate PreKeyWhisperMessage delivery", co.wrap(function*() {
             var ciphertext = yield createEncryptedMessage(aliceAxolotl, bobIdentity);
 
             yield assertMessageIsDecryptedCorrectly(bobAxolotl, aliceIdentity, ciphertext);
-            yield assert.isRejected(decryptMessage(bobAxolotl, aliceIdentity, ciphertext), DuplicateMessageException);
+            yield assertMessageIsDecryptedCorrectly(bobAxolotl, aliceIdentity, ciphertext);
+        }));
+        it("rejects duplicate WhisperMessage delivery", co.wrap(function*() {
+            yield assertSessionsCanCommunicateTwoWay();
+            yield assertSessionsCanCommunicateTwoWay();
+
+            var ciphertext = yield createEncryptedMessage(aliceAxolotl, bobIdentity);
+
+            yield assertMessageIsDecryptedCorrectly(bobAxolotl, aliceIdentity, ciphertext);
+            yield assert.isRejected(decryptMessage(bobAxolotl, aliceIdentity, ciphertext), InvalidMessageException);
         }));
         it("rejects message with bad mac", co.wrap(function*() {
             var ciphertext = yield createEncryptedMessage(aliceAxolotl, bobIdentity);
@@ -403,5 +434,55 @@ describe("Axolotl", () => {
             var ciphertext = yield createEncryptedMessage(aliceAxolotl, bobIdentity);
             yield assert.isRejected(decryptMessage(bobAxolotl, "eve", ciphertext), InvalidMessageException);
         }));
+        describe("simultaneous session initiation", () => {
+            it("handles both parties simultaneously initiating sessions", co.wrap(function*() {
+                var ciphertextForBob = yield createEncryptedMessage(aliceAxolotl, bobIdentity);
+                var ciphertextForAlice = yield createEncryptedMessage(bobAxolotl, aliceIdentity);
+
+                yield assertMessageIsDecryptedCorrectly(bobAxolotl, aliceIdentity, ciphertextForBob);
+                yield assertMessageIsDecryptedCorrectly(aliceAxolotl, bobIdentity, ciphertextForAlice);
+
+                yield assertSessionsCanCommunicateTwoWay();
+                yield assertSessionsCanCommunicateTwoWay();
+                yield assertSessionsCanCommunicateTwoWay();
+            }));
+            it("handles a dropped PreKeyWhisperMessage", co.wrap(function*() {
+                var ciphertextForBob = yield createEncryptedMessage(aliceAxolotl, bobIdentity);
+
+                // This message is dropped
+                yield createEncryptedMessage(bobAxolotl, aliceIdentity);
+
+                yield assertMessageIsDecryptedCorrectly(bobAxolotl, aliceIdentity, ciphertextForBob);
+
+                yield assertSessionsCanCommunicateTwoWay();
+                yield assertSessionsCanCommunicateTwoWay();
+            }));
+            it("handles a dropped first WhisperMessage", co.wrap(function*() {
+                var ciphertextForBob = yield createEncryptedMessage(aliceAxolotl, bobIdentity);
+                var ciphertextForAlice = yield createEncryptedMessage(bobAxolotl, aliceIdentity);
+
+                yield assertMessageIsDecryptedCorrectly(bobAxolotl, aliceIdentity, ciphertextForBob);
+                yield assertMessageIsDecryptedCorrectly(aliceAxolotl, bobIdentity, ciphertextForAlice);
+
+                // This message is dropped
+                yield createEncryptedMessage(aliceAxolotl, bobIdentity);
+
+                yield assertSessionsCanCommunicateTwoWay();
+                yield assertSessionsCanCommunicateTwoWay();
+            }));
+            it("handles a long exchange of session disagreements", co.wrap(function*() {
+                // Because the two parties keep exchanging messages in this pattern, they fail to agree on one session
+                for (var i = 0; i < 30; i++) {
+                    var ciphertextForBob = yield createEncryptedMessage(aliceAxolotl, bobIdentity);
+                    var ciphertextForAlice = yield createEncryptedMessage(bobAxolotl, aliceIdentity);
+
+                    yield assertMessageIsDecryptedCorrectly(bobAxolotl, aliceIdentity, ciphertextForBob);
+                    yield assertMessageIsDecryptedCorrectly(aliceAxolotl, bobIdentity, ciphertextForAlice);
+                }
+
+                yield assertSessionsCanCommunicateTwoWay();
+                yield assertSessionsCanCommunicateTwoWay();
+            }));
+        });
     });
 });

@@ -2,6 +2,7 @@ import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import Session from "../../src/Session";
 import SessionState from "../../src/SessionState";
+import SessionStateList from "../../src/SessionStateList";
 import Messages from "../../src/Messages";
 import {InvalidMessageException} from "../../src/Exceptions";
 import crypto from "./FakeCrypto";
@@ -16,7 +17,9 @@ describe("Session", () => {
             var state = new SessionState({
                 sessionVersion: 3
             });
-            var session = new Session(crypto, state);
+            var sessionStateList = new SessionStateList();
+            sessionStateList.addSessionState(state);
+            var session = new Session(crypto, sessionStateList);
             var message = Messages.encodeWhisperMessage({
                 version: {
                     current: 2,

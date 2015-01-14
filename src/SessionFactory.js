@@ -22,6 +22,7 @@ import Messages from "./Messages";
 import SessionUtils from "./SessionUtils";
 import Ratchet from "./Ratchet";
 import SessionState from "./SessionState";
+import SessionStateList from "./SessionStateList";
 import {InvalidKeyException, UnsupportedProtocolVersionException} from "./Exceptions";
 import co from "co";
 
@@ -67,7 +68,9 @@ function SessionFactory(crypto, store) {
             baseKey: ourBaseKeyPair.public
         };
         sessionState.localRegistrationId = store.getLocalRegistrationId();
-        store.putSession(toIdentity, sessionState);
+        var sessionStateList = new SessionStateList();
+        sessionStateList.addSessionState(sessionState);
+        store.putSession(toIdentity, sessionStateList);
         return self.getSessionForIdentity(toIdentity);
     });
 
@@ -99,7 +102,9 @@ function SessionFactory(crypto, store) {
         };
 
         var sessionState = yield initializeBobSession(bobParameters);
-        store.putSession(fromIdentity, sessionState);
+        var sessionStateList = store.hasSession(fromIdentity) ? store.getSession(fromIdentity) : new SessionStateList();
+        sessionStateList.addSessionState(sessionState);
+        store.putSession(fromIdentity, sessionStateList);
         return self.getSessionForIdentity(fromIdentity);
     });
 

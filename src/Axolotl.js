@@ -124,12 +124,7 @@ function Axolotl(crypto, store) {
     });
 
     self.decryptPreKeyWhisperMessage = co.wrap(function*(fromIdentity, message) {
-        var session;
-        if (sessionFactory.hasSessionForIdentity(fromIdentity)) {
-            session = sessionFactory.getSessionForIdentity(fromIdentity);
-        } else {
-            session = yield sessionFactory.createSessionFromPreKeyWhisperMessage(fromIdentity, message);
-        }
+        var session = yield sessionFactory.createSessionFromPreKeyWhisperMessage(fromIdentity, message);
         return yield session.decryptPreKeyWhisperMessage(message);
     });
 

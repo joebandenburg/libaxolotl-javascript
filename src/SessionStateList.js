@@ -15,23 +15,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// TODO: Consider exporting these individually
+import ProtocolConstants from "./ProtocolConstants";
 
-export default {
-    currentVersion: 3,
+export default class SessionStateList {
+    constructor() {
+        this.sessions = [];
+        Object.seal(this);
+    }
 
-    // Sizes of various fields
-    macByteCount: 8,
-    cipherKeyByteCount: 32,
-    macKeyByteCount: 32,
-    ivByteCount: 16,
-    dhKeyByteCount: 32,
-    rootKeyByteCount: 32,
-    chainKeyByteCount: 32,
+    mostRecentSession() {
+        return this.sessions[0];
+    }
 
-    // Client parameters
-    // TODO: Make these configurable?
-    maximumRetainedReceivedChainKeys: 5,
-    maximumMissedMessages: 2000,
-    maximumSessionsPerIdentity: 40
-};
+    addSessionState(sessionState) {
+        this.sessions.unshift(sessionState);
+        if (this.sessions.length > ProtocolConstants.maximumSessionsPerIdentity) {
+            this.sessions.pop();
+        }
+    }
+
+    removeSessionState(sessionState) {
+        var index = this.sessions.indexOf(sessionState);
+        this.sessions.splice(index, 1);
+    }
+}
