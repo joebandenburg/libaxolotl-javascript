@@ -15,7 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * A chain holds the state of the sub ratchet, used for sending multiple messages before receiving a reply.
+ */
 export default class Chain {
+    /**
+     *
+     * @param {ArrayBuffer} key
+     */
     constructor(key) {
         this.key = key;
         this.index = 0;

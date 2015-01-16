@@ -21,6 +21,11 @@ var wrap = (fn) => {
     };
 };
 
+/**
+ * Wraps an instance of a concrete class converting all methods to return promises.
+ * <p>
+ * This allows the consumer to deal only with promises.
+ */
 export default class PromiseInterfaceDecorator {
     constructor(impl, methodNames) {
         methodNames.forEach((methodName) => {
