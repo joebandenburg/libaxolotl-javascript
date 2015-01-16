@@ -9,17 +9,27 @@ describe("integration", function() {
         });
         it("can be invoked", function() {
             var axolotl = require("../../dist/axolotl");
-            axolotl({}, {
-                getLocalIdentityKeyPair: () => 1,
-                getLocalRegistrationId: () => 1,
-                getRemotePreKeyBundle: () => 1,
-                getLocalSignedPreKeyPair: () => 1,
-                getLocalPreKeyPair: () => 1,
-                hasSession: () => 1,
-                getSession: () => 1,
-                putSession: () => 1,
-                isRemoteIdentityTrusted: () => 1,
-                putRemoteIdentity: () => 1
+            var stub = () => 1;
+            axolotl({
+                generateKeyPair: stub,
+                calculateAgreement: stub,
+                randomBytes: stub,
+                sign: stub,
+                verifySignature: stub,
+                hmac: stub,
+                encrypt: stub,
+                decrypt: stub
+            }, {
+                getLocalIdentityKeyPair: stub,
+                getLocalRegistrationId: stub,
+                getRemotePreKeyBundle: stub,
+                getLocalSignedPreKeyPair: stub,
+                getLocalPreKeyPair: stub,
+                hasSession: stub,
+                getSession: stub,
+                putSession: stub,
+                isRemoteIdentityTrusted: stub,
+                putRemoteIdentity: stub
             });
         });
     });

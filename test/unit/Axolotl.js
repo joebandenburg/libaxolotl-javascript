@@ -56,8 +56,13 @@ describe("Axolotl", () => {
         beforeEach(() => {
             crypto = {
                 generateKeyPair: sinon.stub().returns(Promise.resolve(keyPair)),
+                calculateAgreement: sinon.stub(),
                 randomBytes: sinon.stub().returns(new Uint32Array([20]).buffer),
-                sign: sinon.stub().returns(Promise.resolve(42))
+                sign: sinon.stub().returns(Promise.resolve(42)),
+                verifySignature: sinon.stub(),
+                hmac: sinon.stub(),
+                encrypt: sinon.stub(),
+                decrypt: sinon.stub()
             };
             axolotl = new Axolotl(crypto, createStore());
         });
@@ -71,28 +76,28 @@ describe("Axolotl", () => {
             });
         });
         describe("generateRegistrationId", () => {
-            it("calls randomInt once", () => {
-                axolotl.generateRegistrationId(false);
+            it("calls randomInt once", co.wrap(function*() {
+                yield axolotl.generateRegistrationId(false);
                 assert.ok(crypto.randomBytes.calledOnce);
-            });
-            it("returns non-extended registration ids in the range [1, 16380]", () => {
+            }));
+            it("returns non-extended registration ids in the range [1, 16380]", co.wrap(function*() {
                 crypto.randomBytes.returns(new Uint32Array([20]).buffer);
-                assert.equal(21, axolotl.generateRegistrationId(false));
+                assert.equal(21, yield axolotl.generateRegistrationId(false));
                 crypto.randomBytes.returns(new Uint32Array([0x3ffb]).buffer);
-                assert.equal(0x3ffc, axolotl.generateRegistrationId(false));
+                assert.equal(0x3ffc, yield axolotl.generateRegistrationId(false));
                 crypto.randomBytes.returns(new Uint32Array([0x3ffc]).buffer);
-                assert.equal(1, axolotl.generateRegistrationId(false));
-            });
-            it("returns extended registration ids in the range [1, MAX_INT]", () => {
+                assert.equal(1, yield axolotl.generateRegistrationId(false));
+            }));
+            it("returns extended registration ids in the range [1, MAX_INT]", co.wrap(function*() {
                 crypto.randomBytes.returns(new Uint32Array([20]).buffer);
-                assert.equal(21, axolotl.generateRegistrationId(true));
+                assert.equal(21, yield axolotl.generateRegistrationId(true));
                 crypto.randomBytes.returns(new Uint32Array([0x3ffc]).buffer);
-                assert.equal(0x3ffd, axolotl.generateRegistrationId(true));
+                assert.equal(0x3ffd, yield axolotl.generateRegistrationId(true));
                 crypto.randomBytes.returns(new Uint32Array([0x7ffffffd]).buffer);
-                assert.equal(0x7ffffffe, axolotl.generateRegistrationId(true));
+                assert.equal(0x7ffffffe, yield axolotl.generateRegistrationId(true));
                 crypto.randomBytes.returns(new Uint32Array([0x7ffffffe]).buffer);
-                assert.equal(1, axolotl.generateRegistrationId(true));
-            });
+                assert.equal(1, yield axolotl.generateRegistrationId(true));
+            }));
         });
         describe("generatePreKeys", () => {
             it("returns a list of pre keys of length count", co.wrap(function*() {

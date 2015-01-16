@@ -37,7 +37,16 @@
                         });
                         it("can invoke axolotl", function() {
                             var stub = function() { return 1; };
-                            axolotl({}, {
+                            axolotl({
+                                generateKeyPair: stub,
+                                calculateAgreement: stub,
+                                randomBytes: stub,
+                                sign: stub,
+                                verifySignature: stub,
+                                hmac: stub,
+                                encrypt: stub,
+                                decrypt: stub
+                            }, {
                                 getLocalIdentityKeyPair: stub,
                                 getLocalRegistrationId: stub,
                                 getRemotePreKeyBundle: stub,

@@ -19,21 +19,23 @@ import SessionFactory from "./SessionFactory";
 import {InvalidMessageException} from "./Exceptions";
 import MessageTypes from "./MessageTypes";
 import Store from "./Store";
+import Crypto from "./Crypto";
 import co from "co";
 
 function Axolotl(crypto, store) {
     var self = this;
 
     var wrappedStore = new Store(store);
+    var wrappedCrypto = new Crypto(crypto);
 
-    var sessionFactory = new SessionFactory(crypto, wrappedStore);
+    var sessionFactory = new SessionFactory(wrappedCrypto, wrappedStore);
 
     /**
      * Generate an identity key pair. Clients should only do this once, at install time.
      *
      * @return {KeyPair} generated key pair.
      */
-    self.generateIdentityKeyPair = () => crypto.generateKeyPair();
+    self.generateIdentityKeyPair = () => wrappedCrypto.generateKeyPair();
 
     /**
      * Generate a registration ID. Clients should only do this once, at install time.
@@ -45,13 +47,13 @@ function Axolotl(crypto, store) {
      *                                  higher encoding overhead.
      * @return {number} generated registration ID.
      */
-    self.generateRegistrationId = (extendedRange) => {
+    self.generateRegistrationId = co.wrap(function*(extendedRange) {
         var upperLimit = (extendedRange) ? 0x7ffffffe : 0x3ffc;
-        var bytes = crypto.randomBytes(4);
+        var bytes = yield wrappedCrypto.randomBytes(4);
         var number = new Uint32Array(bytes)[0];
         // TODO: Mod is a bad way to do this. Makes lower values more likely.
         return (number % upperLimit) + 1;
-    };
+    });
 
     /**
      * Generate a list of PreKeys.  Clients should do this at install time, and
@@ -71,7 +73,7 @@ function Axolotl(crypto, store) {
         for (var i = 0; i < count; i++) {
             results.push({
                 id: ((start + i) % 0xfffffe) + 1,
-                keyPair: yield crypto.generateKeyPair()
+                keyPair: yield wrappedCrypto.generateKeyPair()
             });
         }
         return results;
@@ -86,7 +88,7 @@ function Axolotl(crypto, store) {
     self.generateLastResortPreKey = co.wrap(function*() {
         return {
             id: 0xffffff,
-            keyPair: yield crypto.generateKeyPair()
+            keyPair: yield wrappedCrypto.generateKeyPair()
         };
     });
 
@@ -99,8 +101,8 @@ function Axolotl(crypto, store) {
      * @return the generated signed PreKey
      */
     self.generateSignedPreKey = co.wrap(function*(identityKeyPair, signedPreKeyId) {
-        var keyPair = yield crypto.generateKeyPair();
-        var signature = yield crypto.sign(identityKeyPair.private, keyPair.public);
+        var keyPair = yield wrappedCrypto.generateKeyPair();
+        var signature = yield wrappedCrypto.sign(identityKeyPair.private, keyPair.public);
         return {
             id: signedPreKeyId,
             keyPair: keyPair,

@@ -18,20 +18,18 @@
 import PromiseInterfaceDecorator from "./PromiseInterfaceDecorator";
 
 var methodNames = [
-    "getLocalIdentityKeyPair",
-    "getLocalRegistrationId",
-    "getLocalSignedPreKeyPair",
-    "getLocalPreKeyPair",
-    "getRemotePreKeyBundle",
-    "isRemoteIdentityTrusted",
-    "putRemoteIdentity",
-    "hasSession",
-    "getSession",
-    "putSession"
+    "generateKeyPair",
+    "calculateAgreement",
+    "randomBytes",
+    "sign",
+    "verifySignature",
+    "hmac",
+    "encrypt",
+    "decrypt"
 ];
 
-export default class Store extends PromiseInterfaceDecorator {
-    constructor(store) {
-        super(store, methodNames);
+export default class Crypto extends PromiseInterfaceDecorator {
+    constructor(crypto) {
+        super(crypto, methodNames);
     }
 }

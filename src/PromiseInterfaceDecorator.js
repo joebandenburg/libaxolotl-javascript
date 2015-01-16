@@ -15,23 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import PromiseInterfaceDecorator from "./PromiseInterfaceDecorator";
+var wrap = (fn) => {
+    return function() {
+        return Promise.resolve(fn.apply(this, arguments));
+    };
+};
 
-var methodNames = [
-    "getLocalIdentityKeyPair",
-    "getLocalRegistrationId",
-    "getLocalSignedPreKeyPair",
-    "getLocalPreKeyPair",
-    "getRemotePreKeyBundle",
-    "isRemoteIdentityTrusted",
-    "putRemoteIdentity",
-    "hasSession",
-    "getSession",
-    "putSession"
-];
-
-export default class Store extends PromiseInterfaceDecorator {
-    constructor(store) {
-        super(store, methodNames);
+export default class PromiseInterfaceDecorator {
+    constructor(impl, methodNames) {
+        methodNames.forEach((methodName) => {
+            if (!impl[methodName]) {
+                throw new Error("interface must implement " + methodName);
+            }
+            this[methodName] = wrap(impl[methodName]);
+        });
+        Object.freeze(this);
     }
 }
