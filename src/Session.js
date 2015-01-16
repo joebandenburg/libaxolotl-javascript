@@ -320,17 +320,23 @@ function Session(crypto, sessionStateList) {
      * @return {Promise.<Chain, Error>} the next chain for decryption
      */
     var clickMainRatchet = co.wrap(function*(sessionState, theirEphemeralPublicKey) {
-        var nextReceivingChain = yield ratchet.deriveNewRootAndChainKeys(sessionState.rootKey, theirEphemeralPublicKey,
-            sessionState.senderRatchetKeyPair.private);
+        var {
+            rootKey: theirRootKey,
+            chain: nextReceivingChain
+        } = yield ratchet.deriveNextRootKeyAndChain(sessionState.rootKey, theirEphemeralPublicKey,
+                sessionState.senderRatchetKeyPair.private);
         var ourNewEphemeralKeyPair = yield crypto.generateKeyPair();
-        var nextSendingChain = yield ratchet.deriveNewRootAndChainKeys(nextReceivingChain.rootKey,
-            theirEphemeralPublicKey, ourNewEphemeralKeyPair.private);
-        sessionState.rootKey = nextSendingChain.rootKey;
-        sessionState.addReceivingChain(theirEphemeralPublicKey, nextReceivingChain.chain);
+        var {
+            rootKey,
+            chain: nextSendingChain
+        } = yield ratchet.deriveNextRootKeyAndChain(theirRootKey,
+                theirEphemeralPublicKey, ourNewEphemeralKeyPair.private);
+        sessionState.rootKey = rootKey;
+        sessionState.addReceivingChain(theirEphemeralPublicKey, nextReceivingChain);
         sessionState.previousCounter = Math.max(sessionState.sendingChain.index - 1, 0);
-        sessionState.sendingChain = nextSendingChain.chain;
+        sessionState.sendingChain = nextSendingChain;
         sessionState.senderRatchetKeyPair = ourNewEphemeralKeyPair;
-        return nextReceivingChain.chain;
+        return nextReceivingChain;
     });
 
     Object.freeze(self);

@@ -122,7 +122,7 @@ function SessionFactory(crypto, store) {
 
         var sessionState = yield initializeBobSession(bobParameters);
         sessionState.theirBaseKey = message.baseKey;
-        var { sessionStateList: sessionStateList } = yield getSessionStateListForIdentity(fromIdentity);
+        var { sessionStateList } = yield getSessionStateListForIdentity(fromIdentity);
         sessionStateList.addSessionState(sessionState);
         yield sessionStateList.save();
         yield store.putRemoteIdentity(fromIdentity, message.identityKey);
@@ -167,19 +167,25 @@ function SessionFactory(crypto, store) {
             agreements.push(crypto.calculateAgreement(parameters.theirOneTimePreKey,
                 parameters.ourBaseKeyPair.private));
         }
-        var receivingChain = yield ratchet.deriveInitialRootAndChainKeys(parameters.sessionVersion, yield agreements);
-        var sendingChain = yield ratchet.deriveNewRootAndChainKeys(receivingChain.rootKey, parameters.theirRatchetKey,
-            sendingRatchetKeyPair.private);
+        var {
+            rootKey: theirRootKey,
+            chain: receivingChain
+        } = yield ratchet.deriveInitialRootKeyAndChain(parameters.sessionVersion, yield agreements);
+        var {
+            rootKey,
+            chain: sendingChain
+        } = yield ratchet.deriveNextRootKeyAndChain(theirRootKey, parameters.theirRatchetKey,
+                sendingRatchetKeyPair.private);
 
         var sessionState = new SessionState({
             sessionVersion: parameters.sessionVersion,
             remoteIdentityKey: parameters.theirIdentityKey,
             localIdentityKey: parameters.ourIdentityKeyPair.public,
-            rootKey: sendingChain.rootKey,
-            sendingChain: sendingChain.chain,
+            rootKey: rootKey,
+            sendingChain: sendingChain,
             senderRatchetKeyPair: sendingRatchetKeyPair
         });
-        sessionState.addReceivingChain(parameters.theirRatchetKey, receivingChain.chain);
+        sessionState.addReceivingChain(parameters.theirRatchetKey, receivingChain);
         return sessionState;
     });
 
@@ -195,14 +201,17 @@ function SessionFactory(crypto, store) {
                 parameters.ourOneTimePreKeyPair.private));
         }
 
-        var sendingChain = yield ratchet.deriveInitialRootAndChainKeys(parameters.sessionVersion, yield agreements);
+        var {
+            rootKey,
+            chain: sendingChain
+        } = yield ratchet.deriveInitialRootKeyAndChain(parameters.sessionVersion, yield agreements);
 
         return new SessionState({
             sessionVersion: parameters.sessionVersion,
             remoteIdentityKey: parameters.theirIdentityKey,
             localIdentityKey: parameters.ourIdentityKeyPair.public,
-            rootKey: sendingChain.rootKey,
-            sendingChain: sendingChain.chain,
+            rootKey: rootKey,
+            sendingChain: sendingChain,
             senderRatchetKeyPair: parameters.ourRatchetKeyPair
         });
     });

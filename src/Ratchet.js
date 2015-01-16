@@ -31,12 +31,26 @@ const discontinuityBytes = new Uint8Array([0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0
     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
     0xff]).buffer;
 
+/**
+ * A utility class for performing the Axolotl ratcheting.
+ *
+ * @param {Crypto} crypto
+ * @constructor
+ */
 function Ratchet(crypto) {
     const self = this;
 
     const hkdf = new HKDF(crypto);
 
-    self.deriveInitialRootAndChainKeys = co.wrap(function*(sessionVersion, agreements) {
+    /**
+     * Derive the main and sub ratchet states from the shared secrets derived from the handshake.
+     *
+     * @method
+     * @param {number} sessionVersion
+     * @param {Array.<ArrayBuffer>} agreements - an array of ArrayBuffers containing the shared secrets
+     * @return {Promise.<Object, Error>} the root and chain keys
+     */
+    this.deriveInitialRootKeyAndChain = co.wrap(function*(sessionVersion, agreements) {
         var secrets = [];
         if (sessionVersion >= 3) {
             secrets.push(discontinuityBytes);
@@ -52,7 +66,18 @@ function Ratchet(crypto) {
         };
     });
 
-    self.deriveNewRootAndChainKeys = co.wrap(function*(rootKey, theirEphemeralPublicKey, ourEphemeralPrivateKey) {
+    /**
+     * Derive the next main and sub ratchet states from the previous state.
+     * <p>
+     * This method "clicks" the Diffie-Hellman ratchet forwards.
+     *
+     * @method
+     * @param {ArrayBuffer} rootKey - the current root key
+     * @param {ArrayBuffer} theirEphemeralPublicKey - the receiving ephemeral/ratchet key
+     * @param {ArrayBuffer} ourEphemeralPrivateKey - our current ephemeral/ratchet key
+     * @return {Promise.<Object, Error>} the next root and chain keys
+     */
+    this.deriveNextRootKeyAndChain = co.wrap(function*(rootKey, theirEphemeralPublicKey, ourEphemeralPrivateKey) {
         var sharedSecret = yield crypto.calculateAgreement(theirEphemeralPublicKey, ourEphemeralPrivateKey);
         var derivedSecretBytes = yield hkdf.deriveSecretsWithSalt(sharedSecret, rootKey, whisperRatchet,
             ProtocolConstants.rootKeyByteCount + ProtocolConstants.chainKeyByteCount);
@@ -62,7 +87,29 @@ function Ratchet(crypto) {
         };
     });
 
-    self.deriveMessageKeys = co.wrap(function*(chainKey) {
+    //
+    /**
+     * Derive the next sub ratchet state from the previous state.
+     * <p>
+     * This method "clicks" the hash iteration ratchet forwards.
+     *
+     * @method
+     * @param {Chain} chain
+     * @return {Promise.<void, Error>}
+     */
+    this.clickSubRatchet = co.wrap(function*(chain) {
+        chain.index++;
+        chain.key = yield deriveNextChainKey(chain.key);
+    });
+
+    /**
+     * Derive the message keys from the chain key.
+     *
+     * @method
+     * @param {ArrayBuffer} chainKey
+     * @return {Promise.<object, Error>} an object containing the message keys.
+     */
+    this.deriveMessageKeys = co.wrap(function*(chainKey) {
         var messageKey = yield deriveMessageKey(chainKey);
         var keyMaterialBytes = yield hkdf.deriveSecrets(messageKey, whisperMessageKeys,
             ProtocolConstants.cipherKeyByteCount + ProtocolConstants.macKeyByteCount + ProtocolConstants.ivByteCount);
@@ -75,12 +122,6 @@ function Ratchet(crypto) {
             macKey: macKeyBytes,
             iv: ivBytes
         };
-    });
-
-    // "clicks" the hash iteration ratchet forwards
-    self.clickSubRatchet = co.wrap(function*(chain) {
-        chain.index++;
-        chain.key = yield deriveNextChainKey(chain.key);
     });
 
     var hmacByte = co.wrap(function*(key, byte) {
