@@ -24,20 +24,28 @@ var makeReadonly = (obj, key) => {
     });
 };
 
+/**
+ * A serialisable representation of a session.
+ */
 export default class SessionState {
+    /**
+     *
+     * @param {object} parameters - initial parameters
+     */
     constructor(parameters) {
         Object.assign(this, {
             sessionVersion: 3,
             remoteIdentityKey: null,
             localIdentityKey: null,
+            pendingPreKey: null,
+            localRegistrationId: 0,
+            theirBaseKey: null,
+            // Ratchet parameters
             rootKey: null,
             sendingChain: null,
             senderRatchetKeyPair: null,
-            previousCounter: 0,
-            receivingChains: [],
-            pendingPreKey: null,
-            localRegistrationId: 0,
-            theirBaseKey: null
+            receivingChains: [], // Keep a small list of chain keys to allow for out of order message delivery.
+            previousCounter: 0
         }, parameters);
         makeReadonly(this, "sessionVersion");
         makeReadonly(this, "remoteIdentityKey");
@@ -45,9 +53,12 @@ export default class SessionState {
         Object.seal(this);
     }
 
-    // Search the entire list so that we can deal with out of order messages.
-    // i.e. messages that were sent with older chain keys because the sender
-    // has not received our latest message and so hasn't clicked their ratchet.
+    /**
+     * Find a chain for decryption by an ephemeral key.
+     *
+     * @param {ArrayBuffer} theirEphemeralPublicKey
+     * @returns {Chain}
+     */
     findReceivingChain(theirEphemeralPublicKey) {
         for (var i = 0; i < this.receivingChains.length; i++) {
             var receivingChain = this.receivingChains[i];
@@ -58,7 +69,12 @@ export default class SessionState {
         return null;
     }
 
-    // Keep a small list of chain keys to allow for out of order message delivery.
+    /**
+     * Add a chain for decryption with an associated ephemeral key.
+     *
+     * @param {ArrayBuffer} theirEphemeralPublicKey
+     * @param {Chain} chain
+     */
     addReceivingChain(theirEphemeralPublicKey, chain) {
         this.receivingChains.push({
             theirEphemeralKey: theirEphemeralPublicKey,
