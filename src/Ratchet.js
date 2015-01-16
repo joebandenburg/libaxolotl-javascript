@@ -16,7 +16,7 @@
  */
 
 import HKDF from "./HKDF";
-import SessionUtils from "./SessionUtils";
+import Chain from "./Chain";
 import ArrayBufferUtils from "./ArrayBufferUtils";
 import ProtocolConstants from "./ProtocolConstants";
 import co from "co";
@@ -48,7 +48,7 @@ function Ratchet(crypto) {
             ProtocolConstants.rootKeyByteCount + ProtocolConstants.chainKeyByteCount);
         return {
             rootKey: derivedSecret.slice(0, ProtocolConstants.rootKeyByteCount),
-            chain: SessionUtils.createNewChain(derivedSecret.slice(ProtocolConstants.rootKeyByteCount), 0)
+            chain: new Chain(derivedSecret.slice(ProtocolConstants.rootKeyByteCount))
         };
     });
 
@@ -58,7 +58,7 @@ function Ratchet(crypto) {
             ProtocolConstants.rootKeyByteCount + ProtocolConstants.chainKeyByteCount);
         return {
             rootKey: derivedSecretBytes.slice(0, ProtocolConstants.rootKeyByteCount),
-            chain: SessionUtils.createNewChain(derivedSecretBytes.slice(ProtocolConstants.rootKeyByteCount), 0)
+            chain: new Chain(derivedSecretBytes.slice(ProtocolConstants.rootKeyByteCount))
         };
     });
 

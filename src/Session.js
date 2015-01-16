@@ -25,13 +25,29 @@ import {InvalidMessageException, DuplicateMessageException} from "./Exceptions";
 import SequentialOperationQueue from "./SequentialOperationQueue";
 import co from "co";
 
+/**
+ * A Session is responsible for encrypting and decrypting messages for a single identity.
+ *
+ * @param {Crypto} crypto
+ * @param {SessionStateList} sessionStateList
+ * @constructor
+ */
 function Session(crypto, sessionStateList) {
     const self = this;
 
     const ratchet = new Ratchet(crypto);
     const queue = new SequentialOperationQueue();
 
-    self.encryptMessage = queue.wrap(co.wrap(function*(paddedMessage) {
+    /**
+     * Encrypt a message. This method has the side-effect of mutating the session state.
+     * <p>
+     * This method will always execute sequentially even if it is called multiple times.
+     *
+     * @method
+     * @param {ArrayBuffer} paddedMessage - optionally padded message bytes.
+     * @return {Promise.<ArrayBuffer, Error>} encrypted message bytes
+     */
+    this.encryptMessage = queue.wrap(co.wrap(function*(paddedMessage) {
         var whisperMessage = yield createWhisperMessage(paddedMessage);
 
         yield ratchet.clickSubRatchet(sessionStateList.mostRecentSession().sendingChain);
@@ -50,12 +66,28 @@ function Session(crypto, sessionStateList) {
         }
     }));
 
-    self.decryptPreKeyWhisperMessage = (preKeyWhisperMessageBytes) => {
+    /**
+     * Unwrap the WhisperMessage from a PreKeyWhisperMessage and decrypt it.
+     *
+     * @method
+     * @param {ArrayBuffer} preKeyWhisperMessageBytes
+     * @returns {Promise.<ArrayBuffer, InvalidMessageException>}
+     */
+    this.decryptPreKeyWhisperMessage = (preKeyWhisperMessageBytes) => {
         var preKeyWhisperMessage = Messages.decodePreKeyWhisperMessage(preKeyWhisperMessageBytes);
         return self.decryptWhisperMessage(preKeyWhisperMessage.message.message);
     };
 
-    self.decryptWhisperMessage = queue.wrap(co.wrap(function*(whisperMessageBytes) {
+    /**
+     * Decrypt a WhisperMessage.
+     * <p>
+     * This method will always execute sequentially even if it is called multiple times.
+     *
+     * @method
+     * @param {ArrayBuffer} whisperMessageBytes
+     * @returns {Promise.<ArrayBuffer, InvalidMessageException>}
+     */
+    this.decryptWhisperMessage = queue.wrap(co.wrap(function*(whisperMessageBytes) {
         var exceptions = [];
         for (var sessionState of sessionStateList.sessions) {
             var clonedSessionState = new SessionState(sessionState);
@@ -74,6 +106,18 @@ function Session(crypto, sessionStateList) {
         throw new InvalidMessageException("Unable to decrypt message: " + messages);
     }));
 
+    /**
+     * Attempt to decrypt a WhisperMessage using sessionState.
+     * <p>
+     * Failure of this method is not necessarily fatal as it may be possible to decrypt the message using another
+     * session state.
+     *
+     * @method
+     * @private
+     * @param {SessionState} sessionState
+     * @param {ArrayBuffer} whisperMessageBytes
+     * @returns {Promise.<ArrayBuffer, InvalidMessageException>}
+     */
     var decryptWhisperMessageWithSessionState = co.wrap(function*(sessionState, whisperMessageBytes) {
         var whisperMessage = Messages.decodeWhisperMessage(whisperMessageBytes);
         var macInputTypes = Messages.decodeWhisperMessageMacInput(whisperMessageBytes);
@@ -85,7 +129,7 @@ function Session(crypto, sessionStateList) {
         var message = whisperMessage.message;
         var theirEphemeralPublicKey = message.ratchetKey;
 
-        var receivingChain = yield getOrCreateReceivingChainKey(sessionState, theirEphemeralPublicKey);
+        var receivingChain = yield getOrCreateReceivingChain(sessionState, theirEphemeralPublicKey);
         var messageKeys = yield getOrCreateMessageKeys(theirEphemeralPublicKey, receivingChain, message.counter);
         var isValid = yield isValidMac(macInputTypes, messageKeys.macKey, whisperMessage.version.current,
             sessionState.remoteIdentityKey, sessionState.localIdentityKey, whisperMessage.mac);
@@ -102,11 +146,36 @@ function Session(crypto, sessionStateList) {
         return plaintext;
     });
 
+    /**
+     * Verifies the MAC of a WhisperMessage.
+     *
+     * @method
+     * @private
+     * @param {ArrayBuffer} data - the data to calculate the MAC over
+     * @param {ArrayBuffer} macKey - the MAC key
+     * @param {number} messageVersion
+     * @param {ArrayBuffer} senderIdentityKey
+     * @param {ArrayBuffer} receiverIdentityKey
+     * @param {ArrayBuffer} theirMac - the MAC to check
+     * @return {Promise.<Boolean, Error>} true if theirMac is valid, false otherwise.
+     */
     var isValidMac = co.wrap(function*(data, macKey, messageVersion, senderIdentityKey, receiverIdentityKey, theirMac) {
         var ourMac = yield getMac(data, macKey, messageVersion, senderIdentityKey, receiverIdentityKey);
         return ArrayBufferUtils.areEqual(ourMac, theirMac);
     });
 
+    /**
+     * Calculate the MAC of a WhisperMessage.
+     *
+     * @method
+     * @private
+     * @param {ArrayBuffer} data - the data to calculate the MAC over
+     * @param {ArrayBuffer} macKey - the MAC key
+     * @param {number} messageVersion
+     * @param {ArrayBuffer} senderIdentityKey
+     * @param {ArrayBuffer} receiverIdentityKey
+     * @return {Promise.<ArrayBuffer, Error>} the MAC bytes.
+     */
     var getMac = co.wrap(function*(data, macKey, messageVersion, senderIdentityKey, receiverIdentityKey) {
         var macInputs = (messageVersion >= 3) ? [senderIdentityKey, receiverIdentityKey] : [];
         macInputs.push(data);
@@ -114,6 +183,14 @@ function Session(crypto, sessionStateList) {
         return macBytes.slice(0, ProtocolConstants.macByteCount);
     });
 
+    /**
+     * Create an encrypted WhisperMessage.
+     *
+     * @method
+     * @private
+     * @param {ArrayBuffer} paddedMessage
+     * @return {Promise.<ArrayBuffer, Error>} the bytes of an encoded WhisperMessage
+     */
     var createWhisperMessage = co.wrap(function*(paddedMessage) {
         var messageKeys = yield ratchet.deriveMessageKeys(sessionStateList.mostRecentSession().sendingChain.key);
         // TODO: Should use CTR mode in version 2 of protocol
@@ -143,6 +220,14 @@ function Session(crypto, sessionStateList) {
         });
     });
 
+    /**
+     * Create an encrypted PreKeyWhisperMessage.
+     *
+     * @method
+     * @private
+     * @param {ArrayBuffer} whisperMessage - the bytes of an encoded WhisperMessage
+     * @return {Promise.<ArrayBuffer, Error>} the bytes of an encoded PreKeyWhisperMessage
+     */
     var createPreKeyWhisperMessage = (whisperMessage) => {
         var pendingPreKey = sessionStateList.mostRecentSession().pendingPreKey;
         return Messages.encodePreKeyWhisperMessage({
@@ -161,39 +246,79 @@ function Session(crypto, sessionStateList) {
         });
     };
 
-    var getOrCreateReceivingChainKey = co.wrap(function*(sessionState, theirEphemeralPublicKey) {
-        // If they've sent us multiple messages before we've replied, then we'll see their ephemeral key more than once
+    /**
+     * Find the chain for decryption that corresponds to the ephemeral key sent in their message.
+     * <p>
+     * This method handles stepping the main ratchet, if necessary.
+     *
+     * @method
+     * @private
+     * @param {SessionState} sessionState
+     * @param {ArrayBuffer} theirEphemeralPublicKey - the ephemeral key sent in the message.
+     * @return {Promise.<Chain, Error>} the receiving chain
+     */
+    var getOrCreateReceivingChain = co.wrap(function*(sessionState, theirEphemeralPublicKey) {
+        // If they've sent us multiple messages before receiving a reply from us, then those messages will be sent using
+        // the same ephemeral key (i.e. the main ratchet will not click forward).
         var chain = sessionState.findReceivingChain(theirEphemeralPublicKey);
         if (chain) {
             return chain;
         }
-        // This is the first message in a new chain
+        // This is the first message in a new chain.
         return yield clickMainRatchet(sessionState, theirEphemeralPublicKey);
     });
 
+    /**
+     * Find the message keys for decryption that correspond to the ephemeral key sent in their message.
+     * <p>
+     * This method handles stepping the sub ratchet, if necessary.
+     *
+     * @method
+     * @private
+     * @param {ArrayBuffer} theirEphemeralPublicKey - the ephemeral key sent in the message.
+     * @param {Chain} chain - the chain for decryption.
+     * @param {number} counter - the counter sent in the message.
+     * @return {Promise.<MessageKeys, Error>} the message keys for decryption
+     */
     var getOrCreateMessageKeys = co.wrap(function*(theirEphemeralPublicKey, chain, counter) {
         if (chain.index > counter) {
+            // The message is an old message that has been delivered out of order. We should still have the message
+            // key cached unless this is a duplicate message that we've seen before.
             var cachedMessageKeys = chain.messageKeys[counter];
             if (!cachedMessageKeys) {
                 throw new DuplicateMessageException("Received message with old counter");
             }
+            // We don't want to be able to decrypt this message again, for forward secrecy.
             delete chain.messageKeys[counter];
             return cachedMessageKeys;
-        }
-        if (counter - chain.index > ProtocolConstants.maximumMissedMessages) {
-            throw new InvalidMessageException("Too many skipped messages");
-        }
-        while (chain.index < counter) {
-            chain.messageKeys[chain.index] = yield ratchet.deriveMessageKeys(chain.key);
+        } else {
+            // Otherwise, the message is a new message in the chain and we must click the sub ratchet forwards.
+            if (counter - chain.index > ProtocolConstants.maximumMissedMessages) {
+                throw new InvalidMessageException("Too many skipped messages");
+            }
+            while (chain.index < counter) {
+                // Some messages have not yet been delivered ("skipped") and so we need to catch the sub ratchet up
+                // while keeping the message keys for when the messages are eventually delivered.
+                chain.messageKeys[chain.index] = yield ratchet.deriveMessageKeys(chain.key);
+                yield ratchet.clickSubRatchet(chain);
+            }
+            var messageKeys = yield ratchet.deriveMessageKeys(chain.key);
+            // As we have received the message, we should click the sub ratchet forwards so we can't decrypt it again
             yield ratchet.clickSubRatchet(chain);
+            return messageKeys;
         }
-        var messageKeys = yield ratchet.deriveMessageKeys(chain.key);
-        yield ratchet.clickSubRatchet(chain);
-        return messageKeys;
     });
 
-    // "clicks" the DH ratchet two steps forwards. Once to catch up with the other party and once
-    // again to get one click ahead.
+    /**
+     * "clicks" the Diffie-Hellman ratchet two steps forwards. Once to catch up with the other party and once
+     * more so that the next message we send will be one ahead.
+     *
+     * @method
+     * @private
+     * @param {SessionState} sessionState
+     * @param {ArrayBuffer} theirEphemeralPublicKey
+     * @return {Promise.<Chain, Error>} the next chain for decryption
+     */
     var clickMainRatchet = co.wrap(function*(sessionState, theirEphemeralPublicKey) {
         var nextReceivingChain = yield ratchet.deriveNewRootAndChainKeys(sessionState.rootKey, theirEphemeralPublicKey,
             sessionState.senderRatchetKeyPair.private);

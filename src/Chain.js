@@ -15,10 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export default {
-    createNewChain: (key, index) => ({
-        key: key,
-        index: index,
-        messageKeys: []
-    })
-};
+export default class Chain {
+    constructor(key) {
+        this.key = key;
+        this.index = 0;
+        this.messageKeys = [];
+        Object.seal(this);
+    }
+}

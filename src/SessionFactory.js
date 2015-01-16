@@ -19,7 +19,6 @@ import Session from "./Session";
 import WhisperProtos from "./WhisperProtos";
 import ArrayBufferUtils from "./ArrayBufferUtils";
 import Messages from "./Messages";
-import SessionUtils from "./SessionUtils";
 import Ratchet from "./Ratchet";
 import SessionState from "./SessionState";
 import SessionStateList from "./SessionStateList";
