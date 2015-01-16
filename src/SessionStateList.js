@@ -52,7 +52,7 @@ function SessionStateList(sessionPersistor, serialisedState) {
     };
 
     self.save = () => {
-        sessionPersistor(JSON.stringify(sessions, (key, value) => {
+        return sessionPersistor(JSON.stringify(sessions, (key, value) => {
             if (value instanceof ArrayBuffer) {
                 return "{{ab:" + ArrayBufferUtils.stringify(value) + "}}";
             }

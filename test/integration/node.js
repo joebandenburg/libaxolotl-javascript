@@ -9,7 +9,18 @@ describe("integration", function() {
         });
         it("can be invoked", function() {
             var axolotl = require("../../dist/axolotl");
-            axolotl({});
+            axolotl({}, {
+                getLocalIdentityKeyPair: () => 1,
+                getLocalRegistrationId: () => 1,
+                getRemotePreKeyBundle: () => 1,
+                getLocalSignedPreKeyPair: () => 1,
+                getLocalPreKeyPair: () => 1,
+                hasSession: () => 1,
+                getSession: () => 1,
+                putSession: () => 1,
+                isRemoteIdentityTrusted: () => 1,
+                putRemoteIdentity: () => 1
+            });
         });
     });
 });

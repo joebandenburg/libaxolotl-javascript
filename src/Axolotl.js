@@ -18,12 +18,15 @@
 import SessionFactory from "./SessionFactory";
 import {InvalidMessageException} from "./Exceptions";
 import MessageTypes from "./MessageTypes";
+import Store from "./Store";
 import co from "co";
 
 function Axolotl(crypto, store) {
     var self = this;
 
-    var sessionFactory = new SessionFactory(crypto, store);
+    var wrappedStore = new Store(store);
+
+    var sessionFactory = new SessionFactory(crypto, wrappedStore);
 
     /**
      * Generate an identity key pair. Clients should only do this once, at install time.
@@ -107,20 +110,23 @@ function Axolotl(crypto, store) {
 
     self.encryptMessage = co.wrap(function*(toIdentity, message) {
         var session;
-        if (sessionFactory.hasSessionForIdentity(toIdentity)) {
-            session = sessionFactory.getSessionForIdentity(toIdentity);
+        var hasSession = yield sessionFactory.hasSessionForIdentity(toIdentity);
+        if (hasSession) {
+            session = yield sessionFactory.getSessionForIdentity(toIdentity);
         } else {
-            var preKeyBundle = yield store.getPreKeyBundle(toIdentity);
+            var preKeyBundle = yield wrappedStore.getRemotePreKeyBundle(toIdentity);
             session = yield sessionFactory.createSessionFromPreKeyBundle(toIdentity, preKeyBundle);
         }
         return yield session.encryptMessage(message);
     });
 
     self.decryptWhisperMessage = co.wrap(function*(fromIdentity, message) {
-        if (!sessionFactory.hasSessionForIdentity(fromIdentity)) {
+        var hasSession = yield sessionFactory.hasSessionForIdentity(fromIdentity);
+        if (!hasSession) {
             throw new InvalidMessageException("No session for message");
         }
-        return yield sessionFactory.getSessionForIdentity(fromIdentity).decryptWhisperMessage(message);
+        var session = yield sessionFactory.getSessionForIdentity(fromIdentity);
+        return yield session.decryptWhisperMessage(message);
     });
 
     self.decryptPreKeyWhisperMessage = co.wrap(function*(fromIdentity, message) {

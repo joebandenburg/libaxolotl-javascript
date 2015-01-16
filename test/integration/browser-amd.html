@@ -36,7 +36,19 @@
                             assert.notEqual(axolotl, undefined);
                         });
                         it("can invoke axolotl", function() {
-                            axolotl({});
+                            var stub = function() { return 1; };
+                            axolotl({}, {
+                                getLocalIdentityKeyPair: stub,
+                                getLocalRegistrationId: stub,
+                                getRemotePreKeyBundle: stub,
+                                getLocalSignedPreKeyPair: stub,
+                                getLocalPreKeyPair: stub,
+                                hasSession: stub,
+                                getSession: stub,
+                                putSession: stub,
+                                isRemoteIdentityTrusted: stub,
+                                putRemoteIdentity: stub
+                            });
                         });
                     });
                 });

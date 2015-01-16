@@ -33,49 +33,51 @@ function SessionFactory(crypto, store) {
 
     var sessionCache = {};
 
-    self.createSessionFromPreKeyBundle = co.wrap(function*(toIdentity, retrievedPreKey) {
-        if (!store.isIdentityTrusted(toIdentity, retrievedPreKey.identityKey)) {
+    self.createSessionFromPreKeyBundle = co.wrap(function*(toIdentity, retrievedPreKeyBundle) {
+        var isTrusted = yield store.isRemoteIdentityTrusted(toIdentity, retrievedPreKeyBundle.identityKey);
+        if (!isTrusted) {
             throw new UntrustedIdentityException();
         }
-        if (retrievedPreKey.signedPreKey) {
-            var validSignature = yield crypto.verifySignature(retrievedPreKey.identityKey, retrievedPreKey.signedPreKey,
-                retrievedPreKey.signedPreKeySignature);
+        if (retrievedPreKeyBundle.signedPreKey) {
+            var validSignature = yield crypto.verifySignature(retrievedPreKeyBundle.identityKey,
+                retrievedPreKeyBundle.signedPreKey,
+                retrievedPreKeyBundle.signedPreKeySignature);
             if (!validSignature) {
                 throw new InvalidKeyException("Invalid signature on device key");
             }
         }
 
-        if (!retrievedPreKey.preKey && !retrievedPreKey.signedPreKey) {
+        if (!retrievedPreKeyBundle.preKey && !retrievedPreKeyBundle.signedPreKey) {
             throw new InvalidKeyException("Both signed and unsigned pre keys are absent");
         }
 
-        var supportsV3 = !!retrievedPreKey.signedPreKey;
+        var supportsV3 = !!retrievedPreKeyBundle.signedPreKey;
         var ourBaseKeyPair = yield crypto.generateKeyPair();
-        var theirSignedPreKey = supportsV3 ? retrievedPreKey.signedPreKey : retrievedPreKey.preKey;
+        var theirSignedPreKey = supportsV3 ? retrievedPreKeyBundle.signedPreKey : retrievedPreKeyBundle.preKey;
 
         var aliceParameters = {
             sessionVersion: supportsV3 ? 3 : 2,
             ourBaseKeyPair: ourBaseKeyPair,
-            ourIdentityKeyPair: store.getIdentityKeyPair(),
-            theirIdentityKey: retrievedPreKey.identityKey,
+            ourIdentityKeyPair: yield store.getLocalIdentityKeyPair(),
+            theirIdentityKey: retrievedPreKeyBundle.identityKey,
             theirSignedPreKey: theirSignedPreKey,
             theirRatchetKey: theirSignedPreKey,
-            theirOneTimePreKey: supportsV3 ? retrievedPreKey.preKey : undefined
+            theirOneTimePreKey: supportsV3 ? retrievedPreKeyBundle.preKey : undefined
         };
 
         var sessionState = yield initializeAliceSession(aliceParameters);
         sessionState.pendingPreKey = {
-            preKeyId: supportsV3 ? retrievedPreKey.preKeyId : null,
-            signedPreKeyId: retrievedPreKey.signedPreKeyId,
+            preKeyId: supportsV3 ? retrievedPreKeyBundle.preKeyId : null,
+            signedPreKeyId: retrievedPreKeyBundle.signedPreKeyId,
             baseKey: ourBaseKeyPair.public
         };
-        sessionState.localRegistrationId = store.getLocalRegistrationId();
+        sessionState.localRegistrationId = yield store.getLocalRegistrationId();
         var sessionStateList = new SessionStateList((serialisedState) => {
-            store.putSession(toIdentity, serialisedState);
+            return store.putSession(toIdentity, serialisedState);
         });
         sessionStateList.addSessionState(sessionState);
-        sessionStateList.save();
-        return self.getSessionForIdentity(toIdentity);
+        yield sessionStateList.save();
+        return yield self.getSessionForIdentity(toIdentity);
     });
 
     self.createSessionFromPreKeyWhisperMessage = co.wrap(function*(fromIdentity, preKeyWhisperMessageBytes) {
@@ -86,12 +88,13 @@ function SessionFactory(crypto, store) {
                 preKeyWhisperMessage.version.current + " is not supported");
         }
         var message = preKeyWhisperMessage.message;
-        if (!store.isIdentityTrusted(fromIdentity, message.identityKey)) {
+        var isTrusted = yield store.isRemoteIdentityTrusted(fromIdentity, message.identityKey);
+        if (!isTrusted) {
             throw new UntrustedIdentityException();
         }
 
         if (self.hasSessionForIdentity(fromIdentity)) {
-            var cachedSession = getSessionStateListForIdentity(fromIdentity);
+            var cachedSession = yield getSessionStateListForIdentity(fromIdentity);
             for (var cachedSessionState of cachedSession.sessionStateList.sessions) {
                 if (cachedSessionState.theirBaseKey &&
                     ArrayBufferUtils.areEqual(cachedSessionState.theirBaseKey, message.baseKey)) {
@@ -100,18 +103,18 @@ function SessionFactory(crypto, store) {
             }
         }
 
-        var ourSignedPreKeyPair = store.getSignedPreKeyPair(message.signedPreKeyId);
+        var ourSignedPreKeyPair = yield store.getLocalSignedPreKeyPair(message.signedPreKeyId);
 
         var preKeyPair;
         if (message.preKeyId) {
-            preKeyPair = store.getPreKeyPair(message.preKeyId);
+            preKeyPair = yield store.getLocalPreKeyPair(message.preKeyId);
         }
 
         var bobParameters = {
             sessionVersion: preKeyWhisperMessage.version.current,
             theirBaseKey: message.baseKey,
             theirIdentityKey: message.identityKey,
-            ourIdentityKeyPair: store.getIdentityKeyPair(),
+            ourIdentityKeyPair: yield store.getLocalIdentityKeyPair(),
             ourSignedPreKeyPair: ourSignedPreKeyPair,
             ourRatchetKeyPair: ourSignedPreKeyPair,
             ourOneTimePreKeyPair: preKeyPair
@@ -119,10 +122,10 @@ function SessionFactory(crypto, store) {
 
         var sessionState = yield initializeBobSession(bobParameters);
         sessionState.theirBaseKey = message.baseKey;
-        var sessionStateList = getSessionStateListForIdentity(fromIdentity).sessionStateList;
+        var { sessionStateList: sessionStateList } = yield getSessionStateListForIdentity(fromIdentity);
         sessionStateList.addSessionState(sessionState);
-        sessionStateList.save();
-        return self.getSessionForIdentity(fromIdentity);
+        yield sessionStateList.save();
+        return yield self.getSessionForIdentity(fromIdentity);
     });
 
     // TODO: Implement
@@ -132,11 +135,11 @@ function SessionFactory(crypto, store) {
         return store.hasSession(identity);
     };
 
-    var getSessionStateListForIdentity = (identity) => {
+    var getSessionStateListForIdentity = co.wrap(function*(identity) {
         if (!sessionCache[identity]) {
-            var serialisedSessionStateList = store.getSession(identity);
+            var serialisedSessionStateList = yield store.getSession(identity);
             var sessionStateList = new SessionStateList((serialisedState) => {
-                store.putSession(identity, serialisedState);
+                return store.putSession(identity, serialisedState);
             }, serialisedSessionStateList);
             sessionCache[identity] = {
                 sessionStateList: sessionStateList,
@@ -144,11 +147,12 @@ function SessionFactory(crypto, store) {
             };
         }
         return sessionCache[identity];
-    };
+    });
 
-    self.getSessionForIdentity = (identity) => {
-        return getSessionStateListForIdentity(identity).session;
-    };
+    self.getSessionForIdentity = co.wrap(function*(identity) {
+        var cachedSession = yield getSessionStateListForIdentity(identity);
+        return cachedSession.session;
+    });
 
     var initializeAliceSession = co.wrap(function*(parameters) {
         var sendingRatchetKeyPair = yield crypto.generateKeyPair();

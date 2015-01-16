@@ -20,9 +20,28 @@ import crypto from "./FakeCrypto";
 chai.use(chaiAsPromised);
 var assert = chai.assert;
 
+var createStore = () => {
+    var sessions = {};
+    return {
+        sessions: sessions,
+        getLocalIdentityKeyPair: sinon.stub(),
+        getLocalRegistrationId: sinon.stub(),
+        getRemotePreKeyBundle: sinon.stub(),
+        getLocalSignedPreKeyPair: sinon.stub(),
+        getLocalPreKeyPair: sinon.stub(),
+        hasSession: sinon.spy((identity) => !!sessions[identity]),
+        getSession: sinon.spy((identity) => sessions[identity]),
+        putSession: sinon.spy((identity, session) => {
+            sessions[identity] = session;
+        }),
+        isRemoteIdentityTrusted: sinon.stub(),
+        putRemoteIdentity: sinon.stub()
+    };
+};
+
 describe("Axolotl", () => {
     it("is frozen", () => {
-        var axolotl = new Axolotl();
+        var axolotl = new Axolotl(crypto, createStore());
         assert.throws(() => {
             axolotl.foo = 3;
         });
@@ -40,7 +59,7 @@ describe("Axolotl", () => {
                 randomBytes: sinon.stub().returns(new Uint32Array([20]).buffer),
                 sign: sinon.stub().returns(Promise.resolve(42))
             };
-            axolotl = new Axolotl(crypto);
+            axolotl = new Axolotl(crypto, createStore());
         });
         describe("generateIdentityKeyPair", () => {
             it("returns value from generateKeyPair", co.wrap(function*() {
@@ -152,9 +171,6 @@ describe("Axolotl", () => {
         var alicePreKeyBundle;
         var bobPreKeyBundle;
 
-        var aliceSessions;
-        var bobSessions;
-
         var aliceStore;
         var bobStore;
 
@@ -204,76 +220,11 @@ describe("Axolotl", () => {
         beforeEach(co.wrap(function*() {
             crypto.validSiganture = true;
 
-            aliceSessions = {};
-            bobSessions = {};
-
-            aliceStore = {
-                getIdentityKeyPair: () => aliceIdentityKeyPair,
-                getLocalRegistrationId: () => 666,
-                getPreKeyBundle: (identity) => {
-                    assert.equal(identity, bobIdentity);
-                    return Promise.resolve(bobPreKeyBundle);
-                },
-                getSignedPreKeyPair: (id) => {
-                    assert.equal(id, 6);
-                    return aliceSignedPreKeyPair;
-                },
-                hasSession: (identity) => {
-                    return !!aliceSessions[identity];
-                },
-                getSession: (identity) => {
-                    return aliceSessions[identity];
-                },
-                putSession: (identity, session) => {
-                    aliceSessions[identity] = session;
-                },
-                isIdentityTrusted: (identity, publicKey) => {
-                    assert.equal(identity, bobIdentity);
-                    assert.ok(ArrayBufferUtils.areEqual(publicKey, bobIdentityKeyPair.public));
-                    return true;
-                }
-            };
-
-            bobStore = {
-                getIdentityKeyPair: () => bobIdentityKeyPair,
-                getLocalRegistrationId: () => 667,
-                getPreKeyBundle: (identity) => {
-                    assert.equal(identity, aliceIdentity);
-                    return Promise.resolve(alicePreKeyBundle);
-                },
-                getSignedPreKeyPair: (id) => {
-                    assert.equal(id, 5);
-                    return bobSignedPreKeyPair;
-                },
-                getPreKeyPair: (id) => {
-                    assert.equal(id, 31337);
-                    return bobOneTimePreKeyPair;
-                },
-                hasSession: (identity) => {
-                    return !!bobSessions[identity];
-                },
-                getSession: (identity) => {
-                    return bobSessions[identity];
-                },
-                putSession: (identity, session) => {
-                    bobSessions[identity] = session;
-                },
-                isIdentityTrusted: (identity, publicKey) => {
-                    assert.equal(identity, aliceIdentity);
-                    assert.ok(ArrayBufferUtils.areEqual(publicKey, aliceIdentityKeyPair.public));
-                    return true;
-                }
-            };
-
-            aliceAxolotl = new Axolotl(crypto, aliceStore);
-            bobAxolotl = new Axolotl(crypto, bobStore);
-
             aliceIdentityKeyPair = yield crypto.generateKeyPair();
             aliceSignedPreKeyPair = yield crypto.generateKeyPair();
             bobIdentityKeyPair = yield crypto.generateKeyPair();
             bobSignedPreKeyPair = yield crypto.generateKeyPair();
             bobOneTimePreKeyPair = yield crypto.generateKeyPair();
-            var signature = yield crypto.sign(bobIdentityKeyPair.private, bobSignedPreKeyPair.public);
 
             alicePreKeyBundle = {
                 registrationId: 666,
@@ -293,9 +244,27 @@ describe("Axolotl", () => {
                 preKeyId: null,
                 signedPreKey: bobSignedPreKeyPair.public,
                 signedPreKeyId: 5,
-                signedPreKeySignature: signature,
+                signedPreKeySignature: yield crypto.sign(bobIdentityKeyPair.private, bobSignedPreKeyPair.public),
                 identityKey: bobIdentityKeyPair.public
             };
+
+            aliceStore = createStore();
+            aliceStore.getLocalIdentityKeyPair.returns(aliceIdentityKeyPair);
+            aliceStore.getLocalRegistrationId.returns(666);
+            aliceStore.getRemotePreKeyBundle.withArgs(bobIdentity).returns(bobPreKeyBundle);
+            aliceStore.getLocalSignedPreKeyPair.withArgs(6).returns(aliceSignedPreKeyPair);
+            aliceStore.isRemoteIdentityTrusted.withArgs(bobIdentity, bobIdentityKeyPair.public).returns(true);
+
+            bobStore = createStore();
+            bobStore.getLocalIdentityKeyPair.returns(bobIdentityKeyPair);
+            bobStore.getLocalRegistrationId.returns(666);
+            bobStore.getRemotePreKeyBundle.withArgs(aliceIdentity).returns(alicePreKeyBundle);
+            bobStore.getLocalSignedPreKeyPair.withArgs(5).returns(bobSignedPreKeyPair);
+            bobStore.getLocalPreKeyPair.withArgs(31337).returns(bobOneTimePreKeyPair);
+            bobStore.isRemoteIdentityTrusted.withArgs(aliceIdentity, aliceIdentityKeyPair.public).returns(true);
+
+            aliceAxolotl = new Axolotl(crypto, aliceStore);
+            bobAxolotl = new Axolotl(crypto, bobStore);
         }));
 
         // Use smaller protocol parameters to keep the tests fast
@@ -517,11 +486,11 @@ describe("Axolotl", () => {
             }));
         });
         it("rejects untrusted identity in pre key bundle", () => {
-            aliceStore.isIdentityTrusted = (identity, publicKey) => false;
+            aliceStore.isRemoteIdentityTrusted.withArgs(bobIdentity, bobIdentityKeyPair.public).returns(false);
             return assert.isRejected(createEncryptedMessage(aliceAxolotl, bobIdentity), UntrustedIdentityException);
         });
         it("rejects untrusted identity in PreKeyWhisperMessage", co.wrap(function*() {
-            bobStore.isIdentityTrusted = (identity, publicKey) => false;
+            bobStore.isRemoteIdentityTrusted.withArgs(aliceIdentity, aliceIdentityKeyPair.public).returns(false);
 
             var message = yield createEncryptedMessage(aliceAxolotl, bobIdentity);
             return assert.isRejected(decryptMessage(bobAxolotl, aliceIdentity, message), UntrustedIdentityException);
