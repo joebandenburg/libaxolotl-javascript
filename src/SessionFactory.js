@@ -77,6 +77,7 @@ function SessionFactory(crypto, store) {
         });
         sessionStateList.addSessionState(sessionState);
         yield sessionStateList.save();
+        yield store.putRemoteIdentity(toIdentity, retrievedPreKeyBundle.identityKey);
         return yield self.getSessionForIdentity(toIdentity);
     });
 
@@ -125,6 +126,7 @@ function SessionFactory(crypto, store) {
         var { sessionStateList: sessionStateList } = yield getSessionStateListForIdentity(fromIdentity);
         sessionStateList.addSessionState(sessionState);
         yield sessionStateList.save();
+        yield store.putRemoteIdentity(fromIdentity, message.identityKey);
         return yield self.getSessionForIdentity(fromIdentity);
     });
 
