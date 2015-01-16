@@ -10,10 +10,10 @@ import SessionStateList from "../../src/SessionStateList";
 import Messages from "../../src/Messages";
 import {
     UnsupportedProtocolVersionException,
-    ConcurrentUseException,
     InvalidKeyException,
     InvalidMessageException,
-    DuplicateMessageException
+    DuplicateMessageException,
+    UntrustedIdentityException
 } from "../../src/Exceptions";
 import crypto from "./FakeCrypto";
 
@@ -156,6 +156,7 @@ describe("Axolotl", () => {
         var bobSessions;
 
         var aliceStore;
+        var bobStore;
 
         var aliceAxolotl;
         var bobAxolotl;
@@ -225,11 +226,15 @@ describe("Axolotl", () => {
                 },
                 putSession: (identity, session) => {
                     aliceSessions[identity] = session;
+                },
+                isIdentityTrusted: (identity, publicKey) => {
+                    assert.equal(identity, bobIdentity);
+                    assert.ok(ArrayBufferUtils.areEqual(publicKey, bobIdentityKeyPair.public));
+                    return true;
                 }
             };
 
-            aliceAxolotl = new Axolotl(crypto, aliceStore);
-            bobAxolotl = new Axolotl(crypto, {
+            bobStore = {
                 getIdentityKeyPair: () => bobIdentityKeyPair,
                 getLocalRegistrationId: () => 667,
                 getPreKeyBundle: (identity) => {
@@ -252,8 +257,16 @@ describe("Axolotl", () => {
                 },
                 putSession: (identity, session) => {
                     bobSessions[identity] = session;
+                },
+                isIdentityTrusted: (identity, publicKey) => {
+                    assert.equal(identity, aliceIdentity);
+                    assert.ok(ArrayBufferUtils.areEqual(publicKey, aliceIdentityKeyPair.public));
+                    return true;
                 }
-            });
+            };
+
+            aliceAxolotl = new Axolotl(crypto, aliceStore);
+            bobAxolotl = new Axolotl(crypto, bobStore);
 
             aliceIdentityKeyPair = yield crypto.generateKeyPair();
             aliceSignedPreKeyPair = yield crypto.generateKeyPair();
@@ -503,5 +516,15 @@ describe("Axolotl", () => {
                 yield assertMessageIsDecryptedCorrectly(bobAxolotl, aliceIdentity, ciphertext);
             }));
         });
+        it("rejects untrusted identity in pre key bundle", () => {
+            aliceStore.isIdentityTrusted = (identity, publicKey) => false;
+            return assert.isRejected(createEncryptedMessage(aliceAxolotl, bobIdentity), UntrustedIdentityException);
+        });
+        it("rejects untrusted identity in PreKeyWhisperMessage", co.wrap(function*() {
+            bobStore.isIdentityTrusted = (identity, publicKey) => false;
+
+            var message = yield createEncryptedMessage(aliceAxolotl, bobIdentity);
+            return assert.isRejected(decryptMessage(bobAxolotl, aliceIdentity, message), UntrustedIdentityException);
+        }));
     });
 });

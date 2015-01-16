@@ -23,7 +23,7 @@ import SessionUtils from "./SessionUtils";
 import Ratchet from "./Ratchet";
 import SessionState from "./SessionState";
 import SessionStateList from "./SessionStateList";
-import {InvalidKeyException, UnsupportedProtocolVersionException} from "./Exceptions";
+import {InvalidKeyException, UnsupportedProtocolVersionException, UntrustedIdentityException} from "./Exceptions";
 import co from "co";
 
 function SessionFactory(crypto, store) {
@@ -34,7 +34,9 @@ function SessionFactory(crypto, store) {
     var sessionCache = {};
 
     self.createSessionFromPreKeyBundle = co.wrap(function*(toIdentity, retrievedPreKey) {
-        // TODO: Check identity is trusted
+        if (!store.isIdentityTrusted(toIdentity, retrievedPreKey.identityKey)) {
+            throw new UntrustedIdentityException();
+        }
         if (retrievedPreKey.signedPreKey) {
             var validSignature = yield crypto.verifySignature(retrievedPreKey.identityKey, retrievedPreKey.signedPreKey,
                 retrievedPreKey.signedPreKeySignature);
@@ -54,7 +56,7 @@ function SessionFactory(crypto, store) {
         var aliceParameters = {
             sessionVersion: supportsV3 ? 3 : 2,
             ourBaseKeyPair: ourBaseKeyPair,
-            ourIdentityKeyPair: /*TODO*/ store.getIdentityKeyPair(),
+            ourIdentityKeyPair: store.getIdentityKeyPair(),
             theirIdentityKey: retrievedPreKey.identityKey,
             theirSignedPreKey: theirSignedPreKey,
             theirRatchetKey: theirSignedPreKey,
@@ -77,13 +79,16 @@ function SessionFactory(crypto, store) {
     });
 
     self.createSessionFromPreKeyWhisperMessage = co.wrap(function*(fromIdentity, preKeyWhisperMessageBytes) {
-        // TODO: Check identity is trusted
         var preKeyWhisperMessage = Messages.decodePreKeyWhisperMessage(preKeyWhisperMessageBytes);
         if (preKeyWhisperMessage.version.current !== 3) {
             // TODO: Support protocol version 2
-            throw new UnsupportedProtocolVersionException("Protocol version 2 not supported");
+            throw new UnsupportedProtocolVersionException("Protocol version " +
+                preKeyWhisperMessage.version.current + " is not supported");
         }
         var message = preKeyWhisperMessage.message;
+        if (!store.isIdentityTrusted(fromIdentity, message.identityKey)) {
+            throw new UntrustedIdentityException();
+        }
 
         if (self.hasSessionForIdentity(fromIdentity)) {
             var cachedSession = getSessionStateListForIdentity(fromIdentity);
@@ -106,7 +111,7 @@ function SessionFactory(crypto, store) {
             sessionVersion: preKeyWhisperMessage.version.current,
             theirBaseKey: message.baseKey,
             theirIdentityKey: message.identityKey,
-            ourIdentityKeyPair: /*TODO*/ store.getIdentityKeyPair(),
+            ourIdentityKeyPair: store.getIdentityKeyPair(),
             ourSignedPreKeyPair: ourSignedPreKeyPair,
             ourRatchetKeyPair: ourSignedPreKeyPair,
             ourOneTimePreKeyPair: preKeyPair
@@ -120,9 +125,8 @@ function SessionFactory(crypto, store) {
         return self.getSessionForIdentity(fromIdentity);
     });
 
-    self.createSessionFromKeyExchange = (toIdentity, keyExchange) => {
-        // TODO: Implement
-    };
+    // TODO: Implement
+    //self.createSessionFromKeyExchange = (toIdentity, keyExchange) => {};
 
     self.hasSessionForIdentity = (identity) => {
         return store.hasSession(identity);
