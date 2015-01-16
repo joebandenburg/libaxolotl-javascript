@@ -22,14 +22,16 @@ import MessageTypes from "./MessageTypes";
 import SessionState from "./SessionState";
 import Ratchet from "./Ratchet";
 import {InvalidMessageException, DuplicateMessageException} from "./Exceptions";
+import SequentialOperationQueue from "./SequentialOperationQueue";
 import co from "co";
 
 function Session(crypto, sessionStateList) {
     const self = this;
 
     const ratchet = new Ratchet(crypto);
+    const queue = new SequentialOperationQueue();
 
-    self.encryptMessage = queued(co.wrap(function*(paddedMessage) {
+    self.encryptMessage = queue.wrap(co.wrap(function*(paddedMessage) {
         var whisperMessage = yield createWhisperMessage(paddedMessage);
 
         yield ratchet.clickSubRatchet(sessionStateList.mostRecentSession().sendingChain);
@@ -53,7 +55,7 @@ function Session(crypto, sessionStateList) {
         return self.decryptWhisperMessage(preKeyWhisperMessage.message.message);
     };
 
-    self.decryptWhisperMessage = queued(co.wrap(function*(whisperMessageBytes) {
+    self.decryptWhisperMessage = queue.wrap(co.wrap(function*(whisperMessageBytes) {
         var exceptions = [];
         for (var sessionState of sessionStateList.sessions) {
             var clonedSessionState = new SessionState(sessionState);
@@ -99,19 +101,6 @@ function Session(crypto, sessionStateList) {
 
         return plaintext;
     });
-
-    var lastOpPromise = Promise.resolve();
-
-    function queued(fn) {
-        return function() {
-            var boundFn = () => {
-                return fn.apply(self, arguments);
-            };
-            // Note we also perform the next op even if the previous op failed
-            lastOpPromise = lastOpPromise.then(boundFn, boundFn);
-            return lastOpPromise;
-        };
-    }
 
     var isValidMac = co.wrap(function*(data, macKey, messageVersion, senderIdentityKey, receiverIdentityKey, theirMac) {
         var ourMac = yield getMac(data, macKey, messageVersion, senderIdentityKey, receiverIdentityKey);
