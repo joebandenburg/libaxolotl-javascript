@@ -36,7 +36,8 @@ export default class SessionState {
             previousCounter: 0,
             receivingChains: [],
             pendingPreKey: null,
-            localRegistrationId: 0
+            localRegistrationId: 0,
+            theirBaseKey: null
         }, parameters);
         makeReadonly(this, "sessionVersion");
         makeReadonly(this, "remoteIdentityKey");

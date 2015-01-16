@@ -78,13 +78,22 @@ function SessionFactory(crypto, store) {
 
     self.createSessionFromPreKeyWhisperMessage = co.wrap(function*(fromIdentity, preKeyWhisperMessageBytes) {
         // TODO: Check identity is trusted
-        // TODO: Check session doesn't already exist
         var preKeyWhisperMessage = Messages.decodePreKeyWhisperMessage(preKeyWhisperMessageBytes);
         if (preKeyWhisperMessage.version.current !== 3) {
             // TODO: Support protocol version 2
             throw new UnsupportedProtocolVersionException("Protocol version 2 not supported");
         }
         var message = preKeyWhisperMessage.message;
+
+        if (self.hasSessionForIdentity(fromIdentity)) {
+            var cachedSession = getSessionStateListForIdentity(fromIdentity);
+            for (var cachedSessionState of cachedSession.sessionStateList.sessions) {
+                if (cachedSessionState.theirBaseKey &&
+                    ArrayBufferUtils.areEqual(cachedSessionState.theirBaseKey, message.baseKey)) {
+                    return cachedSession.session;
+                }
+            }
+        }
 
         var ourSignedPreKeyPair = store.getSignedPreKeyPair(message.signedPreKeyId);
 
@@ -104,6 +113,7 @@ function SessionFactory(crypto, store) {
         };
 
         var sessionState = yield initializeBobSession(bobParameters);
+        sessionState.theirBaseKey = message.baseKey;
         var sessionStateList = getSessionStateListForIdentity(fromIdentity).sessionStateList;
         sessionStateList.addSessionState(sessionState);
         sessionStateList.save();

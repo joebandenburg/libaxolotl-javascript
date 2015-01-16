@@ -6,6 +6,7 @@ import co from "co";
 import Axolotl from "../../src/Axolotl";
 import ArrayBufferUtils from "../../src/ArrayBufferUtils";
 import ProtocolConstants from "../../src/ProtocolConstants";
+import SessionStateList from "../../src/SessionStateList";
 import Messages from "../../src/Messages";
 import {
     UnsupportedProtocolVersionException,
@@ -350,11 +351,11 @@ describe("Axolotl", () => {
             var ciphertext = yield createEncryptedMessage(aliceAxolotl, bobIdentity);
             yield assert.isRejected(decryptMessage(bobAxolotl, aliceIdentity, ciphertext), InvalidMessageException);
         }));
-        it("accepts duplicate PreKeyWhisperMessage delivery", co.wrap(function*() {
+        it("rejects duplicate PreKeyWhisperMessage delivery", co.wrap(function*() {
             var ciphertext = yield createEncryptedMessage(aliceAxolotl, bobIdentity);
 
             yield assertMessageIsDecryptedCorrectly(bobAxolotl, aliceIdentity, ciphertext);
-            yield assertMessageIsDecryptedCorrectly(bobAxolotl, aliceIdentity, ciphertext);
+            yield assert.isRejected(decryptMessage(bobAxolotl, aliceIdentity, ciphertext), InvalidMessageException);
         }));
         it("rejects duplicate WhisperMessage delivery", co.wrap(function*() {
             yield assertSessionsCanCommunicateTwoWay();
