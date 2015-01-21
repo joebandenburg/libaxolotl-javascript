@@ -65,7 +65,6 @@ import co from "co";
  * @property {function} getLocalPreKeyPair
  * @property {function} getRemotePreKeyBundle
  * @property {function} isRemoteIdentityTrusted
- * @property {function} putRemoteIdentity
  * @property {function} hasSession
  * @property {function} getSession
  * @property {function} putSession

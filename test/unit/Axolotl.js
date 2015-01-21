@@ -34,8 +34,7 @@ var createStore = () => {
         putSession: sinon.spy((identity, session) => {
             sessions[identity] = session;
         }),
-        isRemoteIdentityTrusted: sinon.stub(),
-        putRemoteIdentity: sinon.stub()
+        isRemoteIdentityTrusted: sinon.stub()
     };
 };
 
@@ -499,14 +498,6 @@ describe("Axolotl", () => {
 
             var message = yield createEncryptedMessage(aliceAxolotl, bobIdentity);
             return assert.isRejected(decryptMessage(bobAxolotl, aliceIdentity, message), UntrustedIdentityException);
-        }));
-        it("stores identity in store", co.wrap(function*() {
-            yield assertSessionsCanCommunicateTwoWay();
-
-            assert.ok(aliceStore.putRemoteIdentity.calledOnce);
-            assert.ok(bobStore.putRemoteIdentity.calledOnce);
-            assert.ok(aliceStore.putRemoteIdentity.calledWith(bobIdentity, bobIdentityKeyPair.public));
-            assert.ok(bobStore.putRemoteIdentity.calledWith(aliceIdentity, aliceIdentityKeyPair.public));
         }));
     });
 });

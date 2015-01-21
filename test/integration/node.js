@@ -28,8 +28,7 @@ describe("integration", function() {
                 hasSession: stub,
                 getSession: stub,
                 putSession: stub,
-                isRemoteIdentityTrusted: stub,
-                putRemoteIdentity: stub
+                isRemoteIdentityTrusted: stub
             });
         });
     });

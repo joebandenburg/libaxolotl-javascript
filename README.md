@@ -146,22 +146,6 @@ Name|Type|Description
 `remoteIdentity`|Identity|The identity of the remote entity.
 `identityPublicKey`|ArrayBuffer|The purported remote identity's public key.
 
-#### putRemoteIdentity
-
-```
-putRemoteIdentity(remoteIdentity, identityPublicKey) → {Void}
-```
-
-Store a public key to be associated with the remote identity. This is called when a session is successfully established
-and gives the application an opportunity to register trust in the identity.
-
-##### Parameters
-
-Name|Type|Description
-:---|:---|:----------
-`remoteIdentity`|Identity|The identity of the remote entity.
-`identityPublicKey`|ArrayBuffer|The remote identity's public key.
-
 #### hasSession
 
 ```

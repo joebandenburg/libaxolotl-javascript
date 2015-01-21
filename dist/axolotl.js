@@ -1685,9 +1685,9 @@
                                 if (!isTrusted) {
                                     throw new UntrustedIdentityException();
                                 }
-                                $ctx.state = 49;
+                                $ctx.state = 45;
                                 break;
-                            case 49:
+                            case 45:
                                 $ctx.state = retrievedPreKeyBundle.signedPreKey ? 5 : 10;
                                 break;
                             case 5:
@@ -1708,9 +1708,9 @@
                                     throw new InvalidKeyException('Both signed and unsigned pre keys are absent');
                                 }
                                 supportsV3 = !!retrievedPreKeyBundle.signedPreKey;
-                                $ctx.state = 51;
+                                $ctx.state = 47;
                                 break;
-                            case 51:
+                            case 47:
                                 $ctx.state = 13;
                                 return crypto.generateKeyPair();
                             case 13:
@@ -1719,9 +1719,9 @@
                                 break;
                             case 15:
                                 theirSignedPreKey = supportsV3 ? retrievedPreKeyBundle.signedPreKey : retrievedPreKeyBundle.preKey;
-                                $ctx.state = 53;
+                                $ctx.state = 49;
                                 break;
-                            case 53:
+                            case 49:
                                 $__14 = store.getLocalIdentityKeyPair;
                                 $__15 = $__14.call(store);
                                 $ctx.state = 21;
@@ -1766,9 +1766,9 @@
                                     signedPreKeyId: retrievedPreKeyBundle.signedPreKeyId,
                                     baseKey: ourBaseKeyPair.public
                                 };
-                                $ctx.state = 55;
+                                $ctx.state = 51;
                                 break;
-                            case 55:
+                            case 51:
                                 $ctx.state = 29;
                                 return store.getLocalRegistrationId();
                             case 29:
@@ -1780,9 +1780,9 @@
                                     return store.putSession(toIdentity, serialisedState);
                                 });
                                 sessionStateList.addSessionState(sessionState);
-                                $ctx.state = 57;
+                                $ctx.state = 53;
                                 break;
-                            case 57:
+                            case 53:
                                 $ctx.state = 33;
                                 return sessionStateList.save();
                             case 33:
@@ -1790,25 +1790,18 @@
                                 $ctx.state = 35;
                                 break;
                             case 35:
+                                $__21 = self.getSessionForIdentity;
+                                $__22 = $__21.call(self, toIdentity);
+                                $ctx.state = 41;
+                                break;
+                            case 41:
                                 $ctx.state = 37;
-                                return store.putRemoteIdentity(toIdentity, retrievedPreKeyBundle.identityKey);
+                                return $__22;
                             case 37:
-                                $ctx.maybeThrow();
+                                $__23 = $ctx.sent;
                                 $ctx.state = 39;
                                 break;
                             case 39:
-                                $__21 = self.getSessionForIdentity;
-                                $__22 = $__21.call(self, toIdentity);
-                                $ctx.state = 45;
-                                break;
-                            case 45:
-                                $ctx.state = 41;
-                                return $__22;
-                            case 41:
-                                $__23 = $ctx.sent;
-                                $ctx.state = 43;
-                                break;
-                            case 43:
                                 $ctx.returnValue = $__23;
                                 $ctx.state = -2;
                                 break;
@@ -1828,9 +1821,9 @@
                                     throw new UnsupportedProtocolVersionException('Protocol version ' + preKeyWhisperMessage.version.current + ' is not supported');
                                 }
                                 message = preKeyWhisperMessage.message;
-                                $ctx.state = 63;
+                                $ctx.state = 59;
                                 break;
-                            case 63:
+                            case 59:
                                 $ctx.state = 2;
                                 return store.isRemoteIdentityTrusted(fromIdentity, message.identityKey);
                             case 2:
@@ -1841,9 +1834,9 @@
                                 if (!isTrusted) {
                                     throw new UntrustedIdentityException();
                                 }
-                                $ctx.state = 65;
+                                $ctx.state = 61;
                                 break;
-                            case 65:
+                            case 61:
                                 $ctx.state = self.hasSessionForIdentity(fromIdentity) ? 5 : 14;
                                 break;
                             case 5:
@@ -1926,9 +1919,9 @@
                                 break;
                             case 37:
                                 sessionState.theirBaseKey = message.baseKey;
-                                $ctx.state = 67;
+                                $ctx.state = 63;
                                 break;
-                            case 67:
+                            case 63:
                                 $__33 = getSessionStateListForIdentity(fromIdentity);
                                 $ctx.state = 43;
                                 break;
@@ -1946,9 +1939,9 @@
                                 break;
                             case 45:
                                 sessionStateList.addSessionState(sessionState);
-                                $ctx.state = 69;
+                                $ctx.state = 65;
                                 break;
-                            case 69:
+                            case 65:
                                 $ctx.state = 47;
                                 return sessionStateList.save();
                             case 47:
@@ -1956,25 +1949,18 @@
                                 $ctx.state = 49;
                                 break;
                             case 49:
+                                $__36 = self.getSessionForIdentity;
+                                $__37 = $__36.call(self, fromIdentity);
+                                $ctx.state = 55;
+                                break;
+                            case 55:
                                 $ctx.state = 51;
-                                return store.putRemoteIdentity(fromIdentity, message.identityKey);
+                                return $__37;
                             case 51:
-                                $ctx.maybeThrow();
+                                $__38 = $ctx.sent;
                                 $ctx.state = 53;
                                 break;
                             case 53:
-                                $__36 = self.getSessionForIdentity;
-                                $__37 = $__36.call(self, fromIdentity);
-                                $ctx.state = 59;
-                                break;
-                            case 59:
-                                $ctx.state = 55;
-                                return $__37;
-                            case 55:
-                                $__38 = $ctx.sent;
-                                $ctx.state = 57;
-                                break;
-                            case 57:
                                 $ctx.returnValue = $__38;
                                 $ctx.state = -2;
                                 break;
@@ -2338,7 +2324,6 @@
                     'getLocalPreKeyPair',
                     'getRemotePreKeyBundle',
                     'isRemoteIdentityTrusted',
-                    'putRemoteIdentity',
                     'hasSession',
                     'getSession',
                     'putSession'

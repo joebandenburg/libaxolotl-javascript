@@ -24,7 +24,6 @@ var methodNames = [
     "getLocalPreKeyPair",
     "getRemotePreKeyBundle",
     "isRemoteIdentityTrusted",
-    "putRemoteIdentity",
     "hasSession",
     "getSession",
     "putSession"
