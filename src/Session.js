@@ -18,7 +18,6 @@
 import ArrayBufferUtils from "./ArrayBufferUtils";
 import ProtocolConstants from "./ProtocolConstants";
 import Messages from "./Messages";
-import MessageTypes from "./MessageTypes";
 import SessionState from "./SessionState";
 import Ratchet from "./Ratchet";
 import {InvalidMessageException, DuplicateMessageException} from "./Exceptions";
@@ -55,12 +54,12 @@ function Session(crypto, sessionStateList) {
 
         if (sessionStateList.mostRecentSession().pendingPreKey) {
             return {
-                type: MessageTypes.PreKeyWhisperMessage,
+                isPreKeyWhisperMessage: true,
                 body: createPreKeyWhisperMessage(whisperMessage)
             };
         } else {
             return {
-                type: MessageTypes.WhisperMessage,
+                isPreKeyWhisperMessage: false,
                 body: whisperMessage
             };
         }

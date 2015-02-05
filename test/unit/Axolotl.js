@@ -190,7 +190,7 @@ describe("Axolotl", () => {
         });
 
         var decryptMessage = co.wrap(function*(receivingAxolotl, sendingIdentity, message) {
-            if (message.ciphertext.type === Axolotl.PreKeyWhisperMessage) {
+            if (message.ciphertext.isPreKeyWhisperMessage) {
                 return yield receivingAxolotl.decryptPreKeyWhisperMessage(sendingIdentity, message.ciphertext.body);
             } else {
                 return yield receivingAxolotl.decryptWhisperMessage(sendingIdentity, message.ciphertext.body);
@@ -485,7 +485,7 @@ describe("Axolotl", () => {
                 var aliceAxolotl2 = new Axolotl(crypto, aliceStore);
                 var ciphertext = yield createEncryptedMessage(aliceAxolotl2, bobIdentity);
 
-                assert.equal(ciphertext.ciphertext.type, Axolotl.WhisperMessage);
+                assert.equal(ciphertext.ciphertext.isPreKeyWhisperMessage, false);
                 yield assertMessageIsDecryptedCorrectly(bobAxolotl, aliceIdentity, ciphertext);
             }));
         });

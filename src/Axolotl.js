@@ -17,7 +17,6 @@
 
 import SessionFactory from "./SessionFactory";
 import {InvalidMessageException} from "./Exceptions";
-import MessageTypes from "./MessageTypes";
 import Store from "./Store";
 import Crypto from "./Crypto";
 import co from "co";
@@ -241,8 +240,5 @@ function Axolotl(crypto, store) {
 
     Object.freeze(self);
 }
-
-Axolotl.PreKeyWhisperMessage = MessageTypes.PreKeyWhisperMessage;
-Axolotl.WhisperMessage = MessageTypes.WhisperMessage;
 
 export default Axolotl;
