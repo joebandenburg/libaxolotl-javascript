@@ -2,7 +2,7 @@
 
 module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-mocha-test"); // For server-side testing
-    grunt.loadNpmTasks("grunt-mocha"); // For client-side testing
+    grunt.loadNpmTasks("grunt-karma"); // For client-side testing
     grunt.loadNpmTasks("grunt-pure-cjs");
     grunt.loadNpmTasks("grunt-contrib-jshint");
     grunt.loadNpmTasks("grunt-blanket");
@@ -51,7 +51,7 @@ module.exports = function(grunt) {
                 }
             },
             integrationTests: {
-                src: ["test/integration/**/*.js"],
+                src: ["test/integration/node/**/*.js"],
                 options: {
                     clearRequireCache: true
                 }
@@ -66,11 +66,10 @@ module.exports = function(grunt) {
                 }
             }
         },
-        mocha: {
+        karma: {
             integrationTests: {
-                src: ["test/integration/**/*.html"],
                 options: {
-                    reporter: "Spec"
+                    configFile: "karma.conf.js"
                 }
             }
         },
@@ -89,6 +88,9 @@ module.exports = function(grunt) {
                         "traceur-runtime": {
                             global: "1",
                             id: "__external_2"
+                        },
+                        "axolotl-crypto": {
+                            global: "axolotlCrypto"
                         }
                     }
                 }
@@ -129,5 +131,5 @@ module.exports = function(grunt) {
     grunt.registerTask("test", ["clean", "check", "mochaTest:unitTests"]);
     grunt.registerTask("default", ["test"]);
     grunt.registerTask("dist", ["default", "traceur", "pure_cjs", "concat"]);
-    grunt.registerTask("integration-test", ["dist", "mochaTest:integrationTests", "mocha:integrationTests"]);
+    grunt.registerTask("integration-test", ["dist", "mochaTest:integrationTests", "karma:integrationTests"]);
 };

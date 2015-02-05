@@ -16,7 +16,8 @@
  */
 
 import Axolotl from "./src/Axolotl";
+import axolotlCrypto from "axolotl-crypto";
 
-module.exports = function(cryptoServices, store) {
-    return new Axolotl(cryptoServices, store);
+module.exports = function(store) {
+    return new Axolotl(axolotlCrypto, store);
 };
