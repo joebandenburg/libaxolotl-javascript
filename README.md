@@ -1,11 +1,14 @@
 [![Build Status](https://travis-ci.org/joebandenburg/libaxolotl-javascript.svg?branch=master)](https://travis-ci.org/joebandenburg/libaxolotl-javascript)
 
-A JavaScript port of [libaxolotl](https://github.com/WhisperSystems/libaxolotl-android). Axolotl is a ratcheting forward
-secrecy protocol that works in synchronous and asynchronous messaging environments. The protocol overview is available
-[here](https://github.com/trevp/axolotl/wiki), and the details of the wire format are available
-[here](https://github.com/WhisperSystems/TextSecure/wiki/ProtocolV2).
+This project is an independent implementation of Axolotl in JavaScript. It is not endorsed by Open Whisper Systems.
+
+Axolotl is a ratcheting forward secrecy protocol that works in synchronous and asynchronous messaging environments.
+The protocol overview is available [here](https://github.com/trevp/axolotl/wiki), and the details of the TextSecure wire
+format are available [here](https://github.com/WhisperSystems/TextSecure/wiki/ProtocolV2).
 
 Currently this implementation only supports version 3 of the protocol.
+
+**WARNING: This implementation has not yet been independently audited. That means you should probably not use it.**
 
 ## Installation
 
