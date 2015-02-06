@@ -108,13 +108,6 @@ Name|Type|Description
 :---|:---|:----------
 `preKeyId`|Number|The identifier of the pre-key.
 
-##### Parameters
-
-Name|Type|Description
-:---|:---|:----------
-`remoteIdentity`|Identity|The identity of the remote entity. The type is the same as the type you pass to into
-the methods on Axolotl.
-
 ### Using Axolotl
 
 Start by instantiating Axolotl:
