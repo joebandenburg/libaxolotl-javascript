@@ -48,7 +48,7 @@ window.axolotl(...)
 ### Dependencies
 
 libaxolotl-javascript depends on [traceur-runtime](https://github.com/google/traceur-compiler) and
-[protobuf.js](https://github.com/dcodeIO/ProtoBuf.js) and [cryptographic primitives](blob/master/doc/crypto.md).
+[protobuf.js](https://github.com/dcodeIO/ProtoBuf.js) and [cryptographic primitives](doc/crypto.md).
 These dependencies are not included in the distributed package. If you installed libaxolotl-javascript using npm then
 there is nothing more you need to do - npm will download these dependencies for you.
 
