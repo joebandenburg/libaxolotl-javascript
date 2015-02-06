@@ -16,10 +16,12 @@
  */
 
 import SessionFactory from "./SessionFactory";
+import SessionCipher from "./SessionCipher";
 import {InvalidMessageException} from "./Exceptions";
 import Store from "./Store";
 import Crypto from "./Crypto";
 import co from "co";
+import axolotlCrypto from "axolotl-crypto";
 
 /**
  * A public/private key pair
@@ -90,6 +92,7 @@ function Axolotl(crypto, store) {
     var wrappedCrypto = new Crypto(crypto);
 
     var sessionFactory = new SessionFactory(wrappedCrypto, wrappedStore);
+    var sessionCipher = new SessionCipher(wrappedCrypto);
 
     /**
      * Generate an identity key pair. Clients should only do this once, at install time.
@@ -176,67 +179,67 @@ function Axolotl(crypto, store) {
     });
 
     /**
-     * Encrypt a message using the session associated with toIdentity. If no such session exists, it will be created.
-     * <p>
-     * It is safe to call this method multiple times without waiting for the returned promises to be resolved. In this
-     * case, operations may be queued to ensure sessions are in the correct state for each encryption.
-     *
-     * @method
-     * @param {Identity} toIdentity - the identity of the intended recipient
-     * @param {ArrayBuffer} message - the message bytes to be encrypted
-     * @return {Promise.<ArrayBuffer, (InvalidKeyException|UntrustedIdentityException)>} encrypted message bytes if
-     * fulfilled. May be rejected if a fresh session is required and the pre key bundle returned from the server is
-     * invalid.
+     * @typedef {Object} PreKeyBundle
+     * @property {ArrayBuffer} identityKey - The remote identity's public key.
+     * @property {Number} preKeyId - The identifier of the pre-key included in this bundle.
+     * @property {ArrayBuffer} preKey - The public half of the pre-key.
+     * @property {Number} signedPreKeyId - The identifier of the signed pre-key included in this bundle.
+     * @property {ArrayBuffer} signedPreKey - The public half of the signed pre-key.
+     * @property {ArrayBuffer} signedPreKeySignature - The signature associated with the `signedPreKey`
      */
-    this.encryptMessage = co.wrap(function*(toIdentity, message) {
-        var session;
-        var hasSession = yield sessionFactory.hasSessionForIdentity(toIdentity);
-        if (hasSession) {
-            session = yield sessionFactory.getSessionForIdentity(toIdentity);
-        } else {
-            var preKeyBundle = yield wrappedStore.getRemotePreKeyBundle(toIdentity);
-            session = yield sessionFactory.createSessionFromPreKeyBundle(toIdentity, preKeyBundle);
-        }
-        return yield session.encryptMessage(message);
-    });
 
     /**
-     * Decrypt a WhisperMessage using the session associated with fromIdentity.
-     * <p>
-     * It is safe to call this method multiple times without waiting for the returned promises to be resolved. In this
-     * case, operations may be queued to ensure sessions are in the correct state for each decryption.
-     *
+     * Create a session from a pre-key bundle, probably retrieved from a server.
      * @method
-     * @param {Identity} fromIdentity - the identity of the intended recipient
-     * @param {ArrayBuffer} message - the encrypted message bytes
-     * @return {Promise.<ArrayBuffer, (InvalidMessageException|DuplicateMessageException)>} decrypted message bytes if
-     * fulfilled. May be rejected if a session does not exist, the message is invalid or has been decrypted before.
+     * @type {PreKeyBundle} a pre-key bundle
+     * @returns {Promise.<Session, Error>}
      */
-    this.decryptWhisperMessage = co.wrap(function*(fromIdentity, message) {
-        var hasSession = yield sessionFactory.hasSessionForIdentity(fromIdentity);
-        if (!hasSession) {
-            throw new InvalidMessageException("No session for message");
-        }
-        var session = yield sessionFactory.getSessionForIdentity(fromIdentity);
-        return yield session.decryptWhisperMessage(message);
-    });
+    this.generateSignedPreKeyBundle = sessionFactory.createSessionFromPreKeyBundle;
 
     /**
-     * Decrypt a PreKeyWhisperMessage using the session associated with fromIdentity.
+     * Create a session from a PreKeyWhisperMessage.
+     * @method
+     * @type {Session} session - a session, if one exists, or null otherwise.
+     * @type {ArrayBuffer} preKeyWhisperMessageBytes - the bytes of a PreKeyWhisperMessage.
+     * @returns {Promise.<Session, Error>}
+     */
+    this.createSessionFromPreKeyWhisperMessage = sessionFactory.createSessionFromPreKeyWhisperMessage;
+
+    /**
+     * Encrypt a message using the session.
      * <p>
-     * It is safe to call this method multiple times without waiting for the returned promises to be resolved. In this
-     * case, operations may be queued to ensure sessions are in the correct state for each decryption.
+     * If this method succeeds, the passed in session should be destroyed. This method must never be called with
+     * that session again.
      *
      * @method
-     * @param {Identity} fromIdentity - the identity of the intended recipient
-     * @param {ArrayBuffer} message - the encrypted message bytes
-     * @return {Promise.<ArrayBuffer, (InvalidMessageException|DuplicateMessageException)>} decrypted message bytes if
-     * fulfilled. May be rejected if the message is invalid or has been decrypted before.
+     * @param {Session} session
+     * @param {ArrayBuffer} message - the message bytes to be encrypted (optionally padded)
+     * @return {Promise.<Object, Error>} an object containing the encrypted message bytes as well as a new session
      */
-    this.decryptPreKeyWhisperMessage = co.wrap(function*(fromIdentity, message) {
-        var session = yield sessionFactory.createSessionFromPreKeyWhisperMessage(fromIdentity, message);
-        return yield session.decryptPreKeyWhisperMessage(message);
-    });
+    this.encryptMessage = sessionCipher.encryptMessage;
+
+    /**
+     * Decrypt a WhisperMessage using session.
+     * <p>
+     * If this method succeeds, the passed in session should be destroyed. This method must never be called with
+     * that session again.
+     *
+     * @method
+     * @param {Session} session
+     * @param {ArrayBuffer} whisperMessageBytes - the encrypted message bytes
+     * @returns {Promise.<Object, InvalidMessageException>} an object containing the decrypted message and a new session
+     */
+    this.decryptWhisperMessage = sessionCipher.decryptWhisperMessage;
+
+    /**
+     * Unwrap the WhisperMessage from a PreKeyWhisperMessage and attempt to decrypt it using session.
+     *
+     * @method
+     * @param {Session} session
+     * @param {ArrayBuffer} preKeyWhisperMessageBytes - the encrypted message bytes
+     * @returns {Promise.<Object, InvalidMessageException>} an object containing the decrypted message and a new session
+     */
+    this.decryptPreKeyWhisperMessage = sessionCipher.decryptPreKeyWhisperMessage;
 
     Object.freeze(self);
 }

@@ -48,7 +48,7 @@
             var __moduleName = 'build\\index';
             var $__src_47_Axolotl__, $__axolotl_45_crypto__;
             var Axolotl = ($__src_47_Axolotl__ = _require(2), $__src_47_Axolotl__ && $__src_47_Axolotl__.__esModule && $__src_47_Axolotl__ || { default: $__src_47_Axolotl__ }).default;
-            var axolotlCrypto = ($__axolotl_45_crypto__ = _require(18), $__axolotl_45_crypto__ && $__axolotl_45_crypto__.__esModule && $__axolotl_45_crypto__ || { default: $__axolotl_45_crypto__ }).default;
+            var axolotlCrypto = ($__axolotl_45_crypto__ = _require(17), $__axolotl_45_crypto__ && $__axolotl_45_crypto__.__esModule && $__axolotl_45_crypto__ || { default: $__axolotl_45_crypto__ }).default;
             module.exports = function (store) {
                 return new Axolotl(axolotlCrypto, store);
             };
@@ -132,21 +132,24 @@
                 __esModule: { value: true }
             });
             var __moduleName = 'build/src\\Axolotl';
-            var $__build_47_SessionFactory__, $__build_47_Exceptions__, $__build_47_Store__, $__build_47_Crypto__, $__co__;
+            var $__build_47_SessionFactory__, $__build_47_SessionCipher__, $__build_47_Exceptions__, $__build_47_Store__, $__build_47_Crypto__, $__co__, $__axolotl_45_crypto__;
             var SessionFactory = ($__build_47_SessionFactory__ = _require(13), $__build_47_SessionFactory__ && $__build_47_SessionFactory__.__esModule && $__build_47_SessionFactory__ || { default: $__build_47_SessionFactory__ }).default;
+            var SessionCipher = ($__build_47_SessionCipher__ = _require(12), $__build_47_SessionCipher__ && $__build_47_SessionCipher__.__esModule && $__build_47_SessionCipher__ || { default: $__build_47_SessionCipher__ }).default;
             var InvalidMessageException = ($__build_47_Exceptions__ = _require(5), $__build_47_Exceptions__ && $__build_47_Exceptions__.__esModule && $__build_47_Exceptions__ || { default: $__build_47_Exceptions__ }).InvalidMessageException;
-            var Store = ($__build_47_Store__ = _require(16), $__build_47_Store__ && $__build_47_Store__.__esModule && $__build_47_Store__ || { default: $__build_47_Store__ }).default;
+            var Store = ($__build_47_Store__ = _require(15), $__build_47_Store__ && $__build_47_Store__.__esModule && $__build_47_Store__ || { default: $__build_47_Store__ }).default;
             var Crypto = ($__build_47_Crypto__ = _require(4), $__build_47_Crypto__ && $__build_47_Crypto__.__esModule && $__build_47_Crypto__ || { default: $__build_47_Crypto__ }).default;
-            var co = ($__co__ = _require(19), $__co__ && $__co__.__esModule && $__co__ || { default: $__co__ }).default;
+            var co = ($__co__ = _require(18), $__co__ && $__co__.__esModule && $__co__ || { default: $__co__ }).default;
+            var axolotlCrypto = ($__axolotl_45_crypto__ = _require(17), $__axolotl_45_crypto__ && $__axolotl_45_crypto__.__esModule && $__axolotl_45_crypto__ || { default: $__axolotl_45_crypto__ }).default;
             function Axolotl(crypto, store) {
                 var self = this;
                 var wrappedStore = new Store(store);
                 var wrappedCrypto = new Crypto(crypto);
                 var sessionFactory = new SessionFactory(wrappedCrypto, wrappedStore);
+                var sessionCipher = new SessionCipher(wrappedCrypto);
                 this.generateIdentityKeyPair = function () {
                     return wrappedCrypto.generateKeyPair();
                 };
-                this.generateRegistrationId = co.wrap($traceurRuntime.initGeneratorFunction(function $__5(extendedRange) {
+                this.generateRegistrationId = co.wrap($traceurRuntime.initGeneratorFunction(function $__7(extendedRange) {
                     var upperLimit, bytes, number;
                     return $traceurRuntime.createGeneratorInstance(function ($ctx) {
                         while (true)
@@ -173,10 +176,10 @@
                             default:
                                 return $ctx.end();
                             }
-                    }, $__5, this);
+                    }, $__7, this);
                 }));
-                this.generatePreKeys = co.wrap($traceurRuntime.initGeneratorFunction(function $__6(start, count) {
-                    var results, i, $__7, $__8, $__9, $__10, $__11, $__12;
+                this.generatePreKeys = co.wrap($traceurRuntime.initGeneratorFunction(function $__8(start, count) {
+                    var results, i, $__9, $__10, $__11, $__12, $__13, $__14;
                     return $traceurRuntime.createGeneratorInstance(function ($ctx) {
                         while (true)
                             switch ($ctx.state) {
@@ -197,24 +200,24 @@
                                 $ctx.state = 11;
                                 break;
                             case 5:
-                                $__7 = results.push;
-                                $__8 = wrappedCrypto.generateKeyPair;
-                                $__9 = $__8.call(wrappedCrypto);
+                                $__9 = results.push;
+                                $__10 = wrappedCrypto.generateKeyPair;
+                                $__11 = $__10.call(wrappedCrypto);
                                 $ctx.state = 6;
                                 break;
                             case 6:
                                 $ctx.state = 2;
-                                return $__9;
+                                return $__11;
                             case 2:
-                                $__10 = $ctx.sent;
+                                $__12 = $ctx.sent;
                                 $ctx.state = 4;
                                 break;
                             case 4:
-                                $__11 = {
+                                $__13 = {
                                     id: (start + i) % 16777214 + 1,
-                                    keyPair: $__10
+                                    keyPair: $__12
                                 };
-                                $__12 = $__7.call(results, $__11);
+                                $__14 = $__9.call(results, $__13);
                                 $ctx.state = 8;
                                 break;
                             case 9:
@@ -224,42 +227,42 @@
                             default:
                                 return $ctx.end();
                             }
-                    }, $__6, this);
+                    }, $__8, this);
                 }));
-                this.generateLastResortPreKey = co.wrap($traceurRuntime.initGeneratorFunction(function $__13() {
-                    var $__14, $__15, $__16, $__17;
+                this.generateLastResortPreKey = co.wrap($traceurRuntime.initGeneratorFunction(function $__15() {
+                    var $__16, $__17, $__18, $__19;
                     return $traceurRuntime.createGeneratorInstance(function ($ctx) {
                         while (true)
                             switch ($ctx.state) {
                             case 0:
-                                $__14 = wrappedCrypto.generateKeyPair;
-                                $__15 = $__14.call(wrappedCrypto);
+                                $__16 = wrappedCrypto.generateKeyPair;
+                                $__17 = $__16.call(wrappedCrypto);
                                 $ctx.state = 6;
                                 break;
                             case 6:
                                 $ctx.state = 2;
-                                return $__15;
+                                return $__17;
                             case 2:
-                                $__16 = $ctx.sent;
+                                $__18 = $ctx.sent;
                                 $ctx.state = 4;
                                 break;
                             case 4:
-                                $__17 = {
+                                $__19 = {
                                     id: 16777215,
-                                    keyPair: $__16
+                                    keyPair: $__18
                                 };
                                 $ctx.state = 8;
                                 break;
                             case 8:
-                                $ctx.returnValue = $__17;
+                                $ctx.returnValue = $__19;
                                 $ctx.state = -2;
                                 break;
                             default:
                                 return $ctx.end();
                             }
-                    }, $__13, this);
+                    }, $__15, this);
                 }));
-                this.generateSignedPreKey = co.wrap($traceurRuntime.initGeneratorFunction(function $__18(identityKeyPair, signedPreKeyId) {
+                this.generateSignedPreKey = co.wrap($traceurRuntime.initGeneratorFunction(function $__20(identityKeyPair, signedPreKeyId) {
                     var keyPair, signature;
                     return $traceurRuntime.createGeneratorInstance(function ($ctx) {
                         while (true)
@@ -289,144 +292,13 @@
                             default:
                                 return $ctx.end();
                             }
-                    }, $__18, this);
+                    }, $__20, this);
                 }));
-                this.encryptMessage = co.wrap($traceurRuntime.initGeneratorFunction(function $__19(toIdentity, message) {
-                    var session, hasSession, preKeyBundle, $__20, $__21, $__22;
-                    return $traceurRuntime.createGeneratorInstance(function ($ctx) {
-                        while (true)
-                            switch ($ctx.state) {
-                            case 0:
-                                $ctx.state = 2;
-                                return sessionFactory.hasSessionForIdentity(toIdentity);
-                            case 2:
-                                hasSession = $ctx.sent;
-                                $ctx.state = 4;
-                                break;
-                            case 4:
-                                $ctx.state = hasSession ? 5 : 9;
-                                break;
-                            case 5:
-                                $ctx.state = 6;
-                                return sessionFactory.getSessionForIdentity(toIdentity);
-                            case 6:
-                                session = $ctx.sent;
-                                $ctx.state = 8;
-                                break;
-                            case 9:
-                                $ctx.state = 10;
-                                return wrappedStore.getRemotePreKeyBundle(toIdentity);
-                            case 10:
-                                preKeyBundle = $ctx.sent;
-                                $ctx.state = 12;
-                                break;
-                            case 12:
-                                $ctx.state = 14;
-                                return sessionFactory.createSessionFromPreKeyBundle(toIdentity, preKeyBundle);
-                            case 14:
-                                session = $ctx.sent;
-                                $ctx.state = 8;
-                                break;
-                            case 8:
-                                $__20 = session.encryptMessage;
-                                $__21 = $__20.call(session, message);
-                                $ctx.state = 23;
-                                break;
-                            case 23:
-                                $ctx.state = 19;
-                                return $__21;
-                            case 19:
-                                $__22 = $ctx.sent;
-                                $ctx.state = 21;
-                                break;
-                            case 21:
-                                $ctx.returnValue = $__22;
-                                $ctx.state = -2;
-                                break;
-                            default:
-                                return $ctx.end();
-                            }
-                    }, $__19, this);
-                }));
-                this.decryptWhisperMessage = co.wrap($traceurRuntime.initGeneratorFunction(function $__23(fromIdentity, message) {
-                    var hasSession, session, $__24, $__25, $__26;
-                    return $traceurRuntime.createGeneratorInstance(function ($ctx) {
-                        while (true)
-                            switch ($ctx.state) {
-                            case 0:
-                                $ctx.state = 2;
-                                return sessionFactory.hasSessionForIdentity(fromIdentity);
-                            case 2:
-                                hasSession = $ctx.sent;
-                                $ctx.state = 4;
-                                break;
-                            case 4:
-                                if (!hasSession) {
-                                    throw new InvalidMessageException('No session for message');
-                                }
-                                $ctx.state = 18;
-                                break;
-                            case 18:
-                                $ctx.state = 6;
-                                return sessionFactory.getSessionForIdentity(fromIdentity);
-                            case 6:
-                                session = $ctx.sent;
-                                $ctx.state = 8;
-                                break;
-                            case 8:
-                                $__24 = session.decryptWhisperMessage;
-                                $__25 = $__24.call(session, message);
-                                $ctx.state = 14;
-                                break;
-                            case 14:
-                                $ctx.state = 10;
-                                return $__25;
-                            case 10:
-                                $__26 = $ctx.sent;
-                                $ctx.state = 12;
-                                break;
-                            case 12:
-                                $ctx.returnValue = $__26;
-                                $ctx.state = -2;
-                                break;
-                            default:
-                                return $ctx.end();
-                            }
-                    }, $__23, this);
-                }));
-                this.decryptPreKeyWhisperMessage = co.wrap($traceurRuntime.initGeneratorFunction(function $__27(fromIdentity, message) {
-                    var session, $__28, $__29, $__30;
-                    return $traceurRuntime.createGeneratorInstance(function ($ctx) {
-                        while (true)
-                            switch ($ctx.state) {
-                            case 0:
-                                $ctx.state = 2;
-                                return sessionFactory.createSessionFromPreKeyWhisperMessage(fromIdentity, message);
-                            case 2:
-                                session = $ctx.sent;
-                                $ctx.state = 4;
-                                break;
-                            case 4:
-                                $__28 = session.decryptPreKeyWhisperMessage;
-                                $__29 = $__28.call(session, message);
-                                $ctx.state = 10;
-                                break;
-                            case 10:
-                                $ctx.state = 6;
-                                return $__29;
-                            case 6:
-                                $__30 = $ctx.sent;
-                                $ctx.state = 8;
-                                break;
-                            case 8:
-                                $ctx.returnValue = $__30;
-                                $ctx.state = -2;
-                                break;
-                            default:
-                                return $ctx.end();
-                            }
-                    }, $__27, this);
-                }));
+                this.generateSignedPreKeyBundle = sessionFactory.createSessionFromPreKeyBundle;
+                this.createSessionFromPreKeyWhisperMessage = sessionFactory.createSessionFromPreKeyWhisperMessage;
+                this.encryptMessage = sessionCipher.encryptMessage;
+                this.decryptWhisperMessage = sessionCipher.decryptWhisperMessage;
+                this.decryptPreKeyWhisperMessage = sessionCipher.decryptPreKeyWhisperMessage;
                 Object.freeze(self);
             }
             var $__default = Axolotl;
@@ -551,7 +423,7 @@
             var __moduleName = 'build/src\\HKDF';
             var $__build_47_ArrayBufferUtils__, $__co__;
             var ArrayBufferUtils = ($__build_47_ArrayBufferUtils__ = _require(1), $__build_47_ArrayBufferUtils__ && $__build_47_ArrayBufferUtils__.__esModule && $__build_47_ArrayBufferUtils__ || { default: $__build_47_ArrayBufferUtils__ }).default;
-            var co = ($__co__ = _require(19), $__co__ && $__co__.__esModule && $__co__ || { default: $__co__ }).default;
+            var co = ($__co__ = _require(18), $__co__ && $__co__.__esModule && $__co__ || { default: $__co__ }).default;
             var hashOutputSize = 32;
             var iterationStartOffset = 1;
             function HKDF(crypto) {
@@ -662,7 +534,7 @@
             });
             var __moduleName = 'build/src\\Messages';
             var $__build_47_WhisperProtos__, $__build_47_ProtocolConstants__, $__build_47_ArrayBufferUtils__;
-            var WhisperProtos = ($__build_47_WhisperProtos__ = _require(17), $__build_47_WhisperProtos__ && $__build_47_WhisperProtos__.__esModule && $__build_47_WhisperProtos__ || { default: $__build_47_WhisperProtos__ }).default;
+            var WhisperProtos = ($__build_47_WhisperProtos__ = _require(16), $__build_47_WhisperProtos__ && $__build_47_WhisperProtos__.__esModule && $__build_47_WhisperProtos__ || { default: $__build_47_WhisperProtos__ }).default;
             var ProtocolConstants = ($__build_47_ProtocolConstants__ = _require(9), $__build_47_ProtocolConstants__ && $__build_47_ProtocolConstants__.__esModule && $__build_47_ProtocolConstants__ || { default: $__build_47_ProtocolConstants__ }).default;
             var ArrayBufferUtils = ($__build_47_ArrayBufferUtils__ = _require(1), $__build_47_ArrayBufferUtils__ && $__build_47_ArrayBufferUtils__.__esModule && $__build_47_ArrayBufferUtils__ || { default: $__build_47_ArrayBufferUtils__ }).default;
             var getVersionField = function (version) {
@@ -773,7 +645,7 @@
                     chainKeyByteCount: 32,
                     maximumRetainedReceivedChainKeys: 5,
                     maximumMissedMessages: 2000,
-                    maximumSessionsPerIdentity: 40
+                    maximumSessionStatesPerIdentity: 40
                 };
         },
         function (module, exports) {
@@ -792,7 +664,7 @@
             var Chain = ($__build_47_Chain__ = _require(3), $__build_47_Chain__ && $__build_47_Chain__.__esModule && $__build_47_Chain__ || { default: $__build_47_Chain__ }).default;
             var ArrayBufferUtils = ($__build_47_ArrayBufferUtils__ = _require(1), $__build_47_ArrayBufferUtils__ && $__build_47_ArrayBufferUtils__.__esModule && $__build_47_ArrayBufferUtils__ || { default: $__build_47_ArrayBufferUtils__ }).default;
             var ProtocolConstants = ($__build_47_ProtocolConstants__ = _require(9), $__build_47_ProtocolConstants__ && $__build_47_ProtocolConstants__.__esModule && $__build_47_ProtocolConstants__ || { default: $__build_47_ProtocolConstants__ }).default;
-            var co = ($__co__ = _require(19), $__co__ && $__co__.__esModule && $__co__ || { default: $__co__ }).default;
+            var co = ($__co__ = _require(18), $__co__ && $__co__.__esModule && $__co__ || { default: $__co__ }).default;
             var messageKeySeed = 1;
             var chainKeySeed = 2;
             var whisperMessageKeys = new Uint8Array([
@@ -1094,21 +966,43 @@
                 },
                 __esModule: { value: true }
             });
-            var __moduleName = 'build/src\\SequentialOperationQueue';
-            function SequentialOperationQueue() {
-                var head = Promise.resolve();
-                this.wrap = function (fn) {
-                    return function () {
-                        var $__0 = arguments, $__1 = this;
-                        var boundFn = function () {
-                            return fn.apply($__1, $__0);
-                        };
-                        head = head.then(boundFn, boundFn);
-                        return head;
-                    };
+            var __moduleName = 'build/src\\Session';
+            var $__build_47_ProtocolConstants__, $__build_47_ArrayBufferUtils__, $__build_47_SessionState__;
+            var ProtocolConstants = ($__build_47_ProtocolConstants__ = _require(9), $__build_47_ProtocolConstants__ && $__build_47_ProtocolConstants__.__esModule && $__build_47_ProtocolConstants__ || { default: $__build_47_ProtocolConstants__ }).default;
+            var ArrayBufferUtils = ($__build_47_ArrayBufferUtils__ = _require(1), $__build_47_ArrayBufferUtils__ && $__build_47_ArrayBufferUtils__.__esModule && $__build_47_ArrayBufferUtils__ || { default: $__build_47_ArrayBufferUtils__ }).default;
+            var SessionState = ($__build_47_SessionState__ = _require(14), $__build_47_SessionState__ && $__build_47_SessionState__.__esModule && $__build_47_SessionState__ || { default: $__build_47_SessionState__ }).default;
+            function Session(session) {
+                var self = this;
+                var states = [];
+                if (session) {
+                    for (var $__3 = session.states[$traceurRuntime.toProperty(Symbol.iterator)](), $__4; !($__4 = $__3.next()).done;) {
+                        var state = $__4.value;
+                        {
+                            states.push(new SessionState(state));
+                        }
+                    }
+                }
+                Object.defineProperty(self, 'states', {
+                    get: function () {
+                        return states;
+                    }
+                });
+                self.mostRecentState = function () {
+                    return states[0];
                 };
+                self.addState = function (state) {
+                    states.unshift(state);
+                    if (states.length > ProtocolConstants.maximumSessionStatesPerIdentity) {
+                        states.pop();
+                    }
+                };
+                self.removeState = function (state) {
+                    var index = states.indexOf(state);
+                    states.splice(index, 1);
+                };
+                Object.freeze(this);
             }
-            var $__default = SequentialOperationQueue;
+            var $__default = Session;
         },
         function (module, exports) {
             'use strict';
@@ -1120,57 +1014,58 @@
                 },
                 __esModule: { value: true }
             });
-            var __moduleName = 'build/src\\Session';
-            var $__build_47_ArrayBufferUtils__, $__build_47_ProtocolConstants__, $__build_47_Messages__, $__build_47_SessionState__, $__build_47_Ratchet__, $__build_47_Exceptions__, $__build_47_SequentialOperationQueue__, $__co__;
+            var __moduleName = 'build/src\\SessionCipher';
+            var $__build_47_ArrayBufferUtils__, $__build_47_ProtocolConstants__, $__build_47_Messages__, $__build_47_SessionState__, $__build_47_Session__, $__build_47_Ratchet__, $__build_47_Exceptions__, $__co__;
             var ArrayBufferUtils = ($__build_47_ArrayBufferUtils__ = _require(1), $__build_47_ArrayBufferUtils__ && $__build_47_ArrayBufferUtils__.__esModule && $__build_47_ArrayBufferUtils__ || { default: $__build_47_ArrayBufferUtils__ }).default;
             var ProtocolConstants = ($__build_47_ProtocolConstants__ = _require(9), $__build_47_ProtocolConstants__ && $__build_47_ProtocolConstants__.__esModule && $__build_47_ProtocolConstants__ || { default: $__build_47_ProtocolConstants__ }).default;
             var Messages = ($__build_47_Messages__ = _require(7), $__build_47_Messages__ && $__build_47_Messages__.__esModule && $__build_47_Messages__ || { default: $__build_47_Messages__ }).default;
             var SessionState = ($__build_47_SessionState__ = _require(14), $__build_47_SessionState__ && $__build_47_SessionState__.__esModule && $__build_47_SessionState__ || { default: $__build_47_SessionState__ }).default;
+            var Session = ($__build_47_Session__ = _require(11), $__build_47_Session__ && $__build_47_Session__.__esModule && $__build_47_Session__ || { default: $__build_47_Session__ }).default;
             var Ratchet = ($__build_47_Ratchet__ = _require(10), $__build_47_Ratchet__ && $__build_47_Ratchet__.__esModule && $__build_47_Ratchet__ || { default: $__build_47_Ratchet__ }).default;
-            var $__5 = ($__build_47_Exceptions__ = _require(5), $__build_47_Exceptions__ && $__build_47_Exceptions__.__esModule && $__build_47_Exceptions__ || { default: $__build_47_Exceptions__ }), InvalidMessageException = $__5.InvalidMessageException, DuplicateMessageException = $__5.DuplicateMessageException;
-            var SequentialOperationQueue = ($__build_47_SequentialOperationQueue__ = _require(11), $__build_47_SequentialOperationQueue__ && $__build_47_SequentialOperationQueue__.__esModule && $__build_47_SequentialOperationQueue__ || { default: $__build_47_SequentialOperationQueue__ }).default;
-            var co = ($__co__ = _require(19), $__co__ && $__co__.__esModule && $__co__ || { default: $__co__ }).default;
-            function Session(crypto, sessionStateList) {
+            var $__6 = ($__build_47_Exceptions__ = _require(5), $__build_47_Exceptions__ && $__build_47_Exceptions__.__esModule && $__build_47_Exceptions__ || { default: $__build_47_Exceptions__ }), InvalidMessageException = $__6.InvalidMessageException, DuplicateMessageException = $__6.DuplicateMessageException;
+            var co = ($__co__ = _require(18), $__co__ && $__co__.__esModule && $__co__ || { default: $__co__ }).default;
+            function SessionCipher(crypto) {
                 var self = this;
                 var ratchet = new Ratchet(crypto);
-                var queue = new SequentialOperationQueue();
-                this.encryptMessage = queue.wrap(co.wrap($traceurRuntime.initGeneratorFunction(function $__12(paddedMessage) {
-                    var whisperMessage;
+                this.encryptMessage = co.wrap($traceurRuntime.initGeneratorFunction(function $__12(session, message) {
+                    var newSession, whisperMessage;
                     return $traceurRuntime.createGeneratorInstance(function ($ctx) {
                         while (true)
                             switch ($ctx.state) {
                             case 0:
+                                newSession = new Session(session);
+                                $ctx.state = 15;
+                                break;
+                            case 15:
                                 $ctx.state = 2;
-                                return createWhisperMessage(paddedMessage);
+                                return createWhisperMessage(newSession, message);
                             case 2:
                                 whisperMessage = $ctx.sent;
                                 $ctx.state = 4;
                                 break;
                             case 4:
                                 $ctx.state = 6;
-                                return ratchet.clickSubRatchet(sessionStateList.mostRecentSession().sendingChain);
+                                return ratchet.clickSubRatchet(newSession.mostRecentState().sendingChain);
                             case 6:
                                 $ctx.maybeThrow();
                                 $ctx.state = 8;
                                 break;
                             case 8:
-                                sessionStateList.save();
-                                $ctx.state = 15;
-                                break;
-                            case 15:
-                                $ctx.state = sessionStateList.mostRecentSession().pendingPreKey ? 9 : 11;
+                                $ctx.state = newSession.mostRecentState().pendingPreKey ? 9 : 11;
                                 break;
                             case 9:
                                 $ctx.returnValue = {
                                     isPreKeyWhisperMessage: true,
-                                    body: createPreKeyWhisperMessage(whisperMessage)
+                                    body: createPreKeyWhisperMessage(newSession, whisperMessage),
+                                    session: newSession
                                 };
                                 $ctx.state = -2;
                                 break;
                             case 11:
                                 $ctx.returnValue = {
                                     isPreKeyWhisperMessage: false,
-                                    body: whisperMessage
+                                    body: whisperMessage,
+                                    session: newSession
                                 };
                                 $ctx.state = -2;
                                 break;
@@ -1178,33 +1073,34 @@
                                 return $ctx.end();
                             }
                     }, $__12, this);
-                })));
-                this.decryptPreKeyWhisperMessage = function (preKeyWhisperMessageBytes) {
+                }));
+                this.decryptPreKeyWhisperMessage = function (session, preKeyWhisperMessageBytes) {
                     var preKeyWhisperMessage = Messages.decodePreKeyWhisperMessage(preKeyWhisperMessageBytes);
-                    return self.decryptWhisperMessage(preKeyWhisperMessage.message.message);
+                    return self.decryptWhisperMessage(session, preKeyWhisperMessage.message.message);
                 };
-                this.decryptWhisperMessage = queue.wrap(co.wrap($traceurRuntime.initGeneratorFunction(function $__13(whisperMessageBytes) {
-                    var exceptions, $__8, $__9, sessionState, clonedSessionState, promise, result, messages;
+                this.decryptWhisperMessage = co.wrap($traceurRuntime.initGeneratorFunction(function $__13(session, whisperMessageBytes) {
+                    var newSession, exceptions, $__8, $__9, state, clonedSessionState, promise, result, messages;
                     return $traceurRuntime.createGeneratorInstance(function ($ctx) {
                         while (true)
                             switch ($ctx.state) {
                             case 0:
+                                newSession = new Session(session);
                                 exceptions = [];
                                 $ctx.state = 17;
                                 break;
                             case 17:
-                                $__8 = sessionStateList.sessions[$traceurRuntime.toProperty(Symbol.iterator)]();
+                                $__8 = newSession.states[$traceurRuntime.toProperty(Symbol.iterator)]();
                                 $ctx.state = 6;
                                 break;
                             case 6:
                                 $ctx.state = !($__9 = $__8.next()).done ? 12 : 14;
                                 break;
                             case 12:
-                                sessionState = $__9.value;
+                                state = $__9.value;
                                 $ctx.state = 13;
                                 break;
                             case 13:
-                                clonedSessionState = new SessionState(sessionState);
+                                clonedSessionState = new SessionState(state);
                                 promise = decryptWhisperMessageWithSessionState(clonedSessionState, whisperMessageBytes);
                                 $ctx.state = 11;
                                 break;
@@ -1221,13 +1117,15 @@
                                 $ctx.state = result !== undefined ? 7 : 6;
                                 break;
                             case 7:
-                                sessionStateList.removeSessionState(sessionState);
-                                sessionStateList.addSessionState(clonedSessionState);
-                                sessionStateList.save();
+                                newSession.removeState(state);
+                                newSession.addState(clonedSessionState);
                                 $ctx.state = 8;
                                 break;
                             case 8:
-                                $ctx.returnValue = result;
+                                $ctx.returnValue = {
+                                    message: result,
+                                    session: newSession
+                                };
                                 $ctx.state = -2;
                                 break;
                             case 14:
@@ -1241,7 +1139,7 @@
                                 return $ctx.end();
                             }
                     }, $__13, this);
-                })));
+                }));
                 var decryptWhisperMessageWithSessionState = co.wrap($traceurRuntime.initGeneratorFunction(function $__14(sessionState, whisperMessageBytes) {
                         var whisperMessage, macInputTypes, message, theirEphemeralPublicKey, receivingChain, messageKeys, isValid, plaintext;
                         return $traceurRuntime.createGeneratorInstance(function ($ctx) {
@@ -1354,14 +1252,14 @@
                                 }
                         }, $__16, this);
                     }));
-                var createWhisperMessage = co.wrap($traceurRuntime.initGeneratorFunction(function $__17(paddedMessage) {
+                var createWhisperMessage = co.wrap($traceurRuntime.initGeneratorFunction(function $__17(session, paddedMessage) {
                         var messageKeys, ciphertext, version, message, macInputBytes, $__18, $__19, $__20, $__21, $__22, $__23, $__24, $__25, $__26, $__27, $__28, $__29, $__30, $__31, $__32;
                         return $traceurRuntime.createGeneratorInstance(function ($ctx) {
                             while (true)
                                 switch ($ctx.state) {
                                 case 0:
                                     $ctx.state = 2;
-                                    return ratchet.deriveMessageKeys(sessionStateList.mostRecentSession().sendingChain.key);
+                                    return ratchet.deriveMessageKeys(session.mostRecentState().sendingChain.key);
                                 case 2:
                                     messageKeys = $ctx.sent;
                                     $ctx.state = 4;
@@ -1375,13 +1273,13 @@
                                     break;
                                 case 8:
                                     version = {
-                                        current: sessionStateList.mostRecentSession().sessionVersion,
+                                        current: session.mostRecentState().sessionVersion,
                                         max: ProtocolConstants.currentVersion
                                     };
                                     message = {
-                                        ratchetKey: sessionStateList.mostRecentSession().senderRatchetKeyPair.public,
-                                        counter: sessionStateList.mostRecentSession().sendingChain.index,
-                                        previousCounter: sessionStateList.mostRecentSession().previousCounter,
+                                        ratchetKey: session.mostRecentState().senderRatchetKeyPair.public,
+                                        counter: session.mostRecentState().sendingChain.index,
+                                        previousCounter: session.mostRecentState().previousCounter,
                                         ciphertext: ciphertext
                                     };
                                     macInputBytes = Messages.encodeWhisperMessageMacInput({
@@ -1393,14 +1291,14 @@
                                 case 20:
                                     $__18 = Messages.encodeWhisperMessage;
                                     $__19 = messageKeys.macKey;
-                                    $__20 = sessionStateList.mostRecentSession;
-                                    $__21 = $__20.call(sessionStateList);
+                                    $__20 = session.mostRecentState;
+                                    $__21 = $__20.call(session);
                                     $__22 = $__21.sessionVersion;
-                                    $__23 = sessionStateList.mostRecentSession;
-                                    $__24 = $__23.call(sessionStateList);
+                                    $__23 = session.mostRecentState;
+                                    $__24 = $__23.call(session);
                                     $__25 = $__24.localIdentityKey;
-                                    $__26 = sessionStateList.mostRecentSession;
-                                    $__27 = $__26.call(sessionStateList);
+                                    $__26 = session.mostRecentState;
+                                    $__27 = $__26.call(session);
                                     $__28 = $__27.remoteIdentityKey;
                                     $__29 = getMac(macInputBytes, $__19, $__22, $__25, $__28);
                                     $ctx.state = 14;
@@ -1430,19 +1328,19 @@
                                 }
                         }, $__17, this);
                     }));
-                var createPreKeyWhisperMessage = function (whisperMessage) {
-                    var pendingPreKey = sessionStateList.mostRecentSession().pendingPreKey;
+                var createPreKeyWhisperMessage = function (session, whisperMessage) {
+                    var pendingPreKey = session.mostRecentState().pendingPreKey;
                     return Messages.encodePreKeyWhisperMessage({
                         version: {
-                            current: sessionStateList.mostRecentSession().sessionVersion,
+                            current: session.mostRecentState().sessionVersion,
                             max: ProtocolConstants.currentVersion
                         },
                         message: {
-                            registrationId: sessionStateList.mostRecentSession().localRegistrationId,
+                            registrationId: session.mostRecentState().localRegistrationId,
                             preKeyId: pendingPreKey.preKeyId,
                             signedPreKeyId: pendingPreKey.signedPreKeyId,
                             baseKey: pendingPreKey.baseKey,
-                            identityKey: sessionStateList.mostRecentSession().localIdentityKey,
+                            identityKey: session.mostRecentState().localIdentityKey,
                             message: whisperMessage
                         }
                     });
@@ -1624,7 +1522,7 @@
                     }));
                 Object.freeze(self);
             }
-            var $__default = Session;
+            var $__default = SessionCipher;
         },
         function (module, exports) {
             'use strict';
@@ -1637,163 +1535,127 @@
                 __esModule: { value: true }
             });
             var __moduleName = 'build/src\\SessionFactory';
-            var $__build_47_Session__, $__build_47_WhisperProtos__, $__build_47_ArrayBufferUtils__, $__build_47_Messages__, $__build_47_Ratchet__, $__build_47_SessionState__, $__build_47_SessionStateList__, $__build_47_Exceptions__, $__co__;
-            var Session = ($__build_47_Session__ = _require(12), $__build_47_Session__ && $__build_47_Session__.__esModule && $__build_47_Session__ || { default: $__build_47_Session__ }).default;
-            var WhisperProtos = ($__build_47_WhisperProtos__ = _require(17), $__build_47_WhisperProtos__ && $__build_47_WhisperProtos__.__esModule && $__build_47_WhisperProtos__ || { default: $__build_47_WhisperProtos__ }).default;
+            var $__build_47_WhisperProtos__, $__build_47_ArrayBufferUtils__, $__build_47_Messages__, $__build_47_Ratchet__, $__build_47_SessionState__, $__build_47_Session__, $__build_47_Exceptions__, $__co__;
+            var WhisperProtos = ($__build_47_WhisperProtos__ = _require(16), $__build_47_WhisperProtos__ && $__build_47_WhisperProtos__.__esModule && $__build_47_WhisperProtos__ || { default: $__build_47_WhisperProtos__ }).default;
             var ArrayBufferUtils = ($__build_47_ArrayBufferUtils__ = _require(1), $__build_47_ArrayBufferUtils__ && $__build_47_ArrayBufferUtils__.__esModule && $__build_47_ArrayBufferUtils__ || { default: $__build_47_ArrayBufferUtils__ }).default;
             var Messages = ($__build_47_Messages__ = _require(7), $__build_47_Messages__ && $__build_47_Messages__.__esModule && $__build_47_Messages__ || { default: $__build_47_Messages__ }).default;
             var Ratchet = ($__build_47_Ratchet__ = _require(10), $__build_47_Ratchet__ && $__build_47_Ratchet__.__esModule && $__build_47_Ratchet__ || { default: $__build_47_Ratchet__ }).default;
             var SessionState = ($__build_47_SessionState__ = _require(14), $__build_47_SessionState__ && $__build_47_SessionState__.__esModule && $__build_47_SessionState__ || { default: $__build_47_SessionState__ }).default;
-            var SessionStateList = ($__build_47_SessionStateList__ = _require(15), $__build_47_SessionStateList__ && $__build_47_SessionStateList__.__esModule && $__build_47_SessionStateList__ || { default: $__build_47_SessionStateList__ }).default;
-            var $__7 = ($__build_47_Exceptions__ = _require(5), $__build_47_Exceptions__ && $__build_47_Exceptions__.__esModule && $__build_47_Exceptions__ || { default: $__build_47_Exceptions__ }), InvalidKeyException = $__7.InvalidKeyException, UnsupportedProtocolVersionException = $__7.UnsupportedProtocolVersionException, UntrustedIdentityException = $__7.UntrustedIdentityException;
-            var co = ($__co__ = _require(19), $__co__ && $__co__.__esModule && $__co__ || { default: $__co__ }).default;
+            var Session = ($__build_47_Session__ = _require(11), $__build_47_Session__ && $__build_47_Session__.__esModule && $__build_47_Session__ || { default: $__build_47_Session__ }).default;
+            var $__6 = ($__build_47_Exceptions__ = _require(5), $__build_47_Exceptions__ && $__build_47_Exceptions__.__esModule && $__build_47_Exceptions__ || { default: $__build_47_Exceptions__ }), InvalidKeyException = $__6.InvalidKeyException, UnsupportedProtocolVersionException = $__6.UnsupportedProtocolVersionException, UntrustedIdentityException = $__6.UntrustedIdentityException;
+            var co = ($__co__ = _require(18), $__co__ && $__co__.__esModule && $__co__ || { default: $__co__ }).default;
             function SessionFactory(crypto, store) {
                 var self = this;
                 var ratchet = new Ratchet(crypto);
-                var sessionCache = {};
-                self.createSessionFromPreKeyBundle = co.wrap($traceurRuntime.initGeneratorFunction(function $__13(toIdentity, retrievedPreKeyBundle) {
-                    var isTrusted, validSignature, supportsV3, ourBaseKeyPair, theirSignedPreKey, aliceParameters, sessionState, sessionStateList, $__14, $__15, $__16, $__17, $__18, $__19, $__20, $__21, $__22, $__23;
+                self.createSessionFromPreKeyBundle = co.wrap($traceurRuntime.initGeneratorFunction(function $__12(retrievedPreKeyBundle) {
+                    var validSignature, supportsV3, ourBaseKeyPair, theirSignedPreKey, aliceParameters, sessionState, session, $__13, $__14, $__15, $__16, $__17, $__18, $__19;
                     return $traceurRuntime.createGeneratorInstance(function ($ctx) {
                         while (true)
                             switch ($ctx.state) {
                             case 0:
+                                $ctx.state = retrievedPreKeyBundle.signedPreKey ? 1 : 6;
+                                break;
+                            case 1:
                                 $ctx.state = 2;
-                                return store.isRemoteIdentityTrusted(toIdentity, retrievedPreKeyBundle.identityKey);
+                                return crypto.verifySignature(retrievedPreKeyBundle.identityKey, retrievedPreKeyBundle.signedPreKey, retrievedPreKeyBundle.signedPreKeySignature);
                             case 2:
-                                isTrusted = $ctx.sent;
+                                validSignature = $ctx.sent;
                                 $ctx.state = 4;
                                 break;
                             case 4:
-                                if (!isTrusted) {
-                                    throw new UntrustedIdentityException();
-                                }
-                                $ctx.state = 45;
-                                break;
-                            case 45:
-                                $ctx.state = retrievedPreKeyBundle.signedPreKey ? 5 : 10;
-                                break;
-                            case 5:
-                                $ctx.state = 6;
-                                return crypto.verifySignature(retrievedPreKeyBundle.identityKey, retrievedPreKeyBundle.signedPreKey, retrievedPreKeyBundle.signedPreKeySignature);
-                            case 6:
-                                validSignature = $ctx.sent;
-                                $ctx.state = 8;
-                                break;
-                            case 8:
                                 if (!validSignature) {
                                     throw new InvalidKeyException('Invalid signature on device key');
                                 }
-                                $ctx.state = 10;
+                                $ctx.state = 6;
                                 break;
-                            case 10:
+                            case 6:
                                 if (!retrievedPreKeyBundle.preKey && !retrievedPreKeyBundle.signedPreKey) {
                                     throw new InvalidKeyException('Both signed and unsigned pre keys are absent');
                                 }
                                 supportsV3 = !!retrievedPreKeyBundle.signedPreKey;
-                                $ctx.state = 47;
+                                $ctx.state = 31;
                                 break;
-                            case 47:
-                                $ctx.state = 13;
+                            case 31:
+                                $ctx.state = 9;
                                 return crypto.generateKeyPair();
-                            case 13:
+                            case 9:
                                 ourBaseKeyPair = $ctx.sent;
+                                $ctx.state = 11;
+                                break;
+                            case 11:
+                                theirSignedPreKey = supportsV3 ? retrievedPreKeyBundle.signedPreKey : retrievedPreKeyBundle.preKey;
+                                $ctx.state = 33;
+                                break;
+                            case 33:
+                                $__13 = store.getLocalIdentityKeyPair;
+                                $__14 = $__13.call(store);
+                                $ctx.state = 17;
+                                break;
+                            case 17:
+                                $ctx.state = 13;
+                                return $__14;
+                            case 13:
+                                $__15 = $ctx.sent;
                                 $ctx.state = 15;
                                 break;
                             case 15:
-                                theirSignedPreKey = supportsV3 ? retrievedPreKeyBundle.signedPreKey : retrievedPreKeyBundle.preKey;
-                                $ctx.state = 49;
-                                break;
-                            case 49:
-                                $__14 = store.getLocalIdentityKeyPair;
-                                $__15 = $__14.call(store);
-                                $ctx.state = 21;
-                                break;
-                            case 21:
-                                $ctx.state = 17;
-                                return $__15;
-                            case 17:
-                                $__16 = $ctx.sent;
+                                $__16 = retrievedPreKeyBundle.identityKey;
+                                if (supportsV3) {
+                                    $__17 = retrievedPreKeyBundle.preKey;
+                                    $__18 = $__17;
+                                } else {
+                                    $__18 = undefined;
+                                }
+                                $__19 = {
+                                    sessionVersion: supportsV3 ? 3 : 2,
+                                    ourBaseKeyPair: ourBaseKeyPair,
+                                    ourIdentityKeyPair: $__15,
+                                    theirIdentityKey: $__16,
+                                    theirSignedPreKey: theirSignedPreKey,
+                                    theirRatchetKey: theirSignedPreKey,
+                                    theirOneTimePreKey: $__18
+                                };
+                                aliceParameters = $__19;
                                 $ctx.state = 19;
                                 break;
                             case 19:
-                                $__17 = retrievedPreKeyBundle.identityKey;
-                                if (supportsV3) {
-                                    $__18 = retrievedPreKeyBundle.preKey;
-                                    $__19 = $__18;
-                                } else {
-                                    $__19 = undefined;
-                                }
-                                $__20 = {
-                                    sessionVersion: supportsV3 ? 3 : 2,
-                                    ourBaseKeyPair: ourBaseKeyPair,
-                                    ourIdentityKeyPair: $__16,
-                                    theirIdentityKey: $__17,
-                                    theirSignedPreKey: theirSignedPreKey,
-                                    theirRatchetKey: theirSignedPreKey,
-                                    theirOneTimePreKey: $__19
-                                };
-                                aliceParameters = $__20;
+                                $ctx.state = 21;
+                                return initializeAliceSession(aliceParameters);
+                            case 21:
+                                sessionState = $ctx.sent;
                                 $ctx.state = 23;
                                 break;
                             case 23:
-                                $ctx.state = 25;
-                                return initializeAliceSession(aliceParameters);
-                            case 25:
-                                sessionState = $ctx.sent;
-                                $ctx.state = 27;
-                                break;
-                            case 27:
                                 sessionState.pendingPreKey = {
                                     preKeyId: supportsV3 ? retrievedPreKeyBundle.preKeyId : null,
                                     signedPreKeyId: retrievedPreKeyBundle.signedPreKeyId,
                                     baseKey: ourBaseKeyPair.public
                                 };
-                                $ctx.state = 51;
-                                break;
-                            case 51:
-                                $ctx.state = 29;
-                                return store.getLocalRegistrationId();
-                            case 29:
-                                sessionState.localRegistrationId = $ctx.sent;
-                                $ctx.state = 31;
-                                break;
-                            case 31:
-                                sessionStateList = new SessionStateList(function (serialisedState) {
-                                    return store.putSession(toIdentity, serialisedState);
-                                });
-                                sessionStateList.addSessionState(sessionState);
-                                $ctx.state = 53;
-                                break;
-                            case 53:
-                                $ctx.state = 33;
-                                return sessionStateList.save();
-                            case 33:
-                                $ctx.maybeThrow();
                                 $ctx.state = 35;
                                 break;
                             case 35:
-                                $__21 = self.getSessionForIdentity;
-                                $__22 = $__21.call(self, toIdentity);
-                                $ctx.state = 41;
+                                $ctx.state = 25;
+                                return store.getLocalRegistrationId();
+                            case 25:
+                                sessionState.localRegistrationId = $ctx.sent;
+                                $ctx.state = 27;
                                 break;
-                            case 41:
+                            case 27:
+                                session = new Session();
+                                session.addState(sessionState);
                                 $ctx.state = 37;
-                                return $__22;
-                            case 37:
-                                $__23 = $ctx.sent;
-                                $ctx.state = 39;
                                 break;
-                            case 39:
-                                $ctx.returnValue = $__23;
+                            case 37:
+                                $ctx.returnValue = session;
                                 $ctx.state = -2;
                                 break;
                             default:
                                 return $ctx.end();
                             }
-                    }, $__13, this);
+                    }, $__12, this);
                 }));
-                self.createSessionFromPreKeyWhisperMessage = co.wrap($traceurRuntime.initGeneratorFunction(function $__24(fromIdentity, preKeyWhisperMessageBytes) {
-                    var preKeyWhisperMessage, message, isTrusted, cachedSession, $__9, $__10, cachedSessionState, ourSignedPreKeyPair, preKeyPair, bobParameters, sessionState, sessionStateList, $__25, $__26, $__27, $__28, $__29, $__30, $__31, $__32, $__33, $__34, $__35, $__36, $__37, $__38;
+                self.createSessionFromPreKeyWhisperMessage = co.wrap($traceurRuntime.initGeneratorFunction(function $__20(session, preKeyWhisperMessageBytes) {
+                    var preKeyWhisperMessage, message, $__8, $__9, cachedSessionState, ourSignedPreKeyPair, preKeyPair, bobParameters, sessionState, $__21, $__22, $__23, $__24, $__25, $__26, $__27, $__28;
                     return $traceurRuntime.createGeneratorInstance(function ($ctx) {
                         while (true)
                             switch ($ctx.state) {
@@ -1803,214 +1665,101 @@
                                     throw new UnsupportedProtocolVersionException('Protocol version ' + preKeyWhisperMessage.version.current + ' is not supported');
                                 }
                                 message = preKeyWhisperMessage.message;
-                                $ctx.state = 59;
+                                $ctx.state = 33;
                                 break;
-                            case 59:
+                            case 33:
+                                $ctx.state = session ? 7 : 6;
+                                break;
+                            case 7:
+                                $__8 = session.states[$traceurRuntime.toProperty(Symbol.iterator)]();
                                 $ctx.state = 2;
-                                return store.isRemoteIdentityTrusted(fromIdentity, message.identityKey);
+                                break;
                             case 2:
-                                isTrusted = $ctx.sent;
-                                $ctx.state = 4;
+                                $ctx.state = !($__9 = $__8.next()).done ? 4 : 6;
                                 break;
                             case 4:
-                                if (!isTrusted) {
-                                    throw new UntrustedIdentityException();
-                                }
-                                $ctx.state = 61;
-                                break;
-                            case 61:
-                                $ctx.state = self.hasSessionForIdentity(fromIdentity) ? 5 : 14;
+                                cachedSessionState = $__9.value;
+                                $ctx.state = 5;
                                 break;
                             case 5:
-                                $ctx.state = 6;
-                                return getSessionStateListForIdentity(fromIdentity);
-                            case 6:
-                                cachedSession = $ctx.sent;
-                                $ctx.state = 8;
+                                $ctx.state = cachedSessionState.theirBaseKey && ArrayBufferUtils.areEqual(cachedSessionState.theirBaseKey, message.baseKey) ? 1 : 2;
                                 break;
-                            case 8:
-                                $__9 = cachedSession.sessionStateList.sessions[$traceurRuntime.toProperty(Symbol.iterator)]();
-                                $ctx.state = 10;
-                                break;
-                            case 10:
-                                $ctx.state = !($__10 = $__9.next()).done ? 12 : 14;
-                                break;
-                            case 12:
-                                cachedSessionState = $__10.value;
-                                $ctx.state = 13;
-                                break;
-                            case 13:
-                                $ctx.state = cachedSessionState.theirBaseKey && ArrayBufferUtils.areEqual(cachedSessionState.theirBaseKey, message.baseKey) ? 9 : 10;
-                                break;
-                            case 9:
-                                $ctx.returnValue = cachedSession.session;
+                            case 1:
+                                $ctx.returnValue = session;
                                 $ctx.state = -2;
                                 break;
-                            case 14:
-                                $ctx.state = 18;
+                            case 6:
+                                $ctx.state = 10;
                                 return store.getLocalSignedPreKeyPair(message.signedPreKeyId);
-                            case 18:
+                            case 10:
                                 ourSignedPreKeyPair = $ctx.sent;
-                                $ctx.state = 20;
+                                $ctx.state = 12;
                                 break;
-                            case 20:
-                                $ctx.state = message.preKeyId ? 21 : 24;
+                            case 12:
+                                $ctx.state = message.preKeyId ? 13 : 16;
+                                break;
+                            case 13:
+                                $ctx.state = 14;
+                                return store.getLocalPreKeyPair(message.preKeyId);
+                            case 14:
+                                preKeyPair = $ctx.sent;
+                                $ctx.state = 16;
+                                break;
+                            case 16:
+                                $__21 = preKeyWhisperMessage.version;
+                                $__22 = $__21.current;
+                                $__23 = message.baseKey;
+                                $__24 = message.identityKey;
+                                $__25 = store.getLocalIdentityKeyPair;
+                                $__26 = $__25.call(store);
+                                $ctx.state = 23;
+                                break;
+                            case 23:
+                                $ctx.state = 19;
+                                return $__26;
+                            case 19:
+                                $__27 = $ctx.sent;
+                                $ctx.state = 21;
                                 break;
                             case 21:
-                                $ctx.state = 22;
-                                return store.getLocalPreKeyPair(message.preKeyId);
-                            case 22:
-                                preKeyPair = $ctx.sent;
-                                $ctx.state = 24;
-                                break;
-                            case 24:
-                                $__25 = preKeyWhisperMessage.version;
-                                $__26 = $__25.current;
-                                $__27 = message.baseKey;
-                                $__28 = message.identityKey;
-                                $__29 = store.getLocalIdentityKeyPair;
-                                $__30 = $__29.call(store);
-                                $ctx.state = 31;
-                                break;
-                            case 31:
-                                $ctx.state = 27;
-                                return $__30;
-                            case 27:
-                                $__31 = $ctx.sent;
-                                $ctx.state = 29;
-                                break;
-                            case 29:
-                                $__32 = {
-                                    sessionVersion: $__26,
-                                    theirBaseKey: $__27,
-                                    theirIdentityKey: $__28,
-                                    ourIdentityKeyPair: $__31,
+                                $__28 = {
+                                    sessionVersion: $__22,
+                                    theirBaseKey: $__23,
+                                    theirIdentityKey: $__24,
+                                    ourIdentityKeyPair: $__27,
                                     ourSignedPreKeyPair: ourSignedPreKeyPair,
                                     ourRatchetKeyPair: ourSignedPreKeyPair,
                                     ourOneTimePreKeyPair: preKeyPair
                                 };
-                                bobParameters = $__32;
-                                $ctx.state = 33;
+                                bobParameters = $__28;
+                                $ctx.state = 25;
                                 break;
-                            case 33:
-                                $ctx.state = 35;
+                            case 25:
+                                $ctx.state = 27;
                                 return initializeBobSession(bobParameters);
-                            case 35:
+                            case 27:
                                 sessionState = $ctx.sent;
-                                $ctx.state = 37;
+                                $ctx.state = 29;
                                 break;
-                            case 37:
+                            case 29:
                                 sessionState.theirBaseKey = message.baseKey;
-                                $ctx.state = 63;
-                                break;
-                            case 63:
-                                $__33 = getSessionStateListForIdentity(fromIdentity);
-                                $ctx.state = 43;
-                                break;
-                            case 43:
-                                $ctx.state = 39;
-                                return $__33;
-                            case 39:
-                                $__34 = $ctx.sent;
-                                $ctx.state = 41;
-                                break;
-                            case 41:
-                                $__35 = $__34.sessionStateList;
-                                sessionStateList = $__35;
-                                $ctx.state = 45;
-                                break;
-                            case 45:
-                                sessionStateList.addSessionState(sessionState);
-                                $ctx.state = 65;
-                                break;
-                            case 65:
-                                $ctx.state = 47;
-                                return sessionStateList.save();
-                            case 47:
-                                $ctx.maybeThrow();
-                                $ctx.state = 49;
-                                break;
-                            case 49:
-                                $__36 = self.getSessionForIdentity;
-                                $__37 = $__36.call(self, fromIdentity);
-                                $ctx.state = 55;
-                                break;
-                            case 55:
-                                $ctx.state = 51;
-                                return $__37;
-                            case 51:
-                                $__38 = $ctx.sent;
-                                $ctx.state = 53;
-                                break;
-                            case 53:
-                                $ctx.returnValue = $__38;
-                                $ctx.state = -2;
-                                break;
-                            default:
-                                return $ctx.end();
-                            }
-                    }, $__24, this);
-                }));
-                self.hasSessionForIdentity = function (identity) {
-                    return store.hasSession(identity);
-                };
-                var getSessionStateListForIdentity = co.wrap($traceurRuntime.initGeneratorFunction(function $__39(identity) {
-                        var serialisedSessionStateList, sessionStateList;
-                        return $traceurRuntime.createGeneratorInstance(function ($ctx) {
-                            while (true)
-                                switch ($ctx.state) {
-                                case 0:
-                                    $ctx.state = !sessionCache[identity] ? 1 : 6;
-                                    break;
-                                case 1:
-                                    $ctx.state = 2;
-                                    return store.getSession(identity);
-                                case 2:
-                                    serialisedSessionStateList = $ctx.sent;
-                                    $ctx.state = 4;
-                                    break;
-                                case 4:
-                                    sessionStateList = new SessionStateList(function (serialisedState) {
-                                        return store.putSession(identity, serialisedState);
-                                    }, serialisedSessionStateList);
-                                    sessionCache[identity] = {
-                                        sessionStateList: sessionStateList,
-                                        session: new Session(crypto, sessionStateList)
-                                    };
-                                    $ctx.state = 6;
-                                    break;
-                                case 6:
-                                    $ctx.returnValue = sessionCache[identity];
-                                    $ctx.state = -2;
-                                    break;
-                                default:
-                                    return $ctx.end();
+                                if (!session) {
+                                    session = new Session();
                                 }
-                        }, $__39, this);
-                    }));
-                self.getSessionForIdentity = co.wrap($traceurRuntime.initGeneratorFunction(function $__40(identity) {
-                    var cachedSession;
-                    return $traceurRuntime.createGeneratorInstance(function ($ctx) {
-                        while (true)
-                            switch ($ctx.state) {
-                            case 0:
-                                $ctx.state = 2;
-                                return getSessionStateListForIdentity(identity);
-                            case 2:
-                                cachedSession = $ctx.sent;
-                                $ctx.state = 4;
+                                session.addState(sessionState);
+                                $ctx.state = 35;
                                 break;
-                            case 4:
-                                $ctx.returnValue = cachedSession.session;
+                            case 35:
+                                $ctx.returnValue = session;
                                 $ctx.state = -2;
                                 break;
                             default:
                                 return $ctx.end();
                             }
-                    }, $__40, this);
+                    }, $__20, this);
                 }));
-                var initializeAliceSession = co.wrap($traceurRuntime.initGeneratorFunction(function $__41(parameters) {
-                        var sendingRatchetKeyPair, agreements, $__11, theirRootKey, receivingChain, $__12, rootKey, sendingChain, sessionState, $__42, $__43, $__44, $__45, $__46, $__47, $__48, $__49, $__50, $__51, $__52, $__53, $__54, $__55;
+                var initializeAliceSession = co.wrap($traceurRuntime.initGeneratorFunction(function $__29(parameters) {
+                        var sendingRatchetKeyPair, agreements, $__10, theirRootKey, receivingChain, $__11, rootKey, sendingChain, sessionState, $__30, $__31, $__32, $__33, $__34, $__35, $__36, $__37, $__38, $__39, $__40, $__41, $__42, $__43;
                         return $traceurRuntime.createGeneratorInstance(function ($ctx) {
                             while (true)
                                 switch ($ctx.state) {
@@ -2033,56 +1782,56 @@
                                     $ctx.state = 30;
                                     break;
                                 case 30:
-                                    $__42 = ratchet.deriveInitialRootKeyAndChain;
-                                    $__43 = parameters.sessionVersion;
+                                    $__30 = ratchet.deriveInitialRootKeyAndChain;
+                                    $__31 = parameters.sessionVersion;
                                     $ctx.state = 14;
                                     break;
                                 case 14:
                                     $ctx.state = 6;
                                     return agreements;
                                 case 6:
-                                    $__44 = $ctx.sent;
+                                    $__32 = $ctx.sent;
                                     $ctx.state = 8;
                                     break;
                                 case 8:
-                                    $__45 = $__42.call(ratchet, $__43, $__44);
+                                    $__33 = $__30.call(ratchet, $__31, $__32);
                                     $ctx.state = 16;
                                     break;
                                 case 16:
                                     $ctx.state = 10;
-                                    return $__45;
+                                    return $__33;
                                 case 10:
-                                    $__46 = $ctx.sent;
+                                    $__34 = $ctx.sent;
                                     $ctx.state = 12;
                                     break;
                                 case 12:
-                                    $__11 = $__46;
-                                    $__47 = $__11.rootKey;
-                                    theirRootKey = $__47;
-                                    $__48 = $__11.chain;
-                                    receivingChain = $__48;
+                                    $__10 = $__34;
+                                    $__35 = $__10.rootKey;
+                                    theirRootKey = $__35;
+                                    $__36 = $__10.chain;
+                                    receivingChain = $__36;
                                     $ctx.state = 18;
                                     break;
                                 case 18:
-                                    $__49 = ratchet.deriveNextRootKeyAndChain;
-                                    $__50 = parameters.theirRatchetKey;
-                                    $__51 = sendingRatchetKeyPair.private;
-                                    $__52 = $__49.call(ratchet, theirRootKey, $__50, $__51);
+                                    $__37 = ratchet.deriveNextRootKeyAndChain;
+                                    $__38 = parameters.theirRatchetKey;
+                                    $__39 = sendingRatchetKeyPair.private;
+                                    $__40 = $__37.call(ratchet, theirRootKey, $__38, $__39);
                                     $ctx.state = 24;
                                     break;
                                 case 24:
                                     $ctx.state = 20;
-                                    return $__52;
+                                    return $__40;
                                 case 20:
-                                    $__53 = $ctx.sent;
+                                    $__41 = $ctx.sent;
                                     $ctx.state = 22;
                                     break;
                                 case 22:
-                                    $__12 = $__53;
-                                    $__54 = $__12.rootKey;
-                                    rootKey = $__54;
-                                    $__55 = $__12.chain;
-                                    sendingChain = $__55;
+                                    $__11 = $__41;
+                                    $__42 = $__11.rootKey;
+                                    rootKey = $__42;
+                                    $__43 = $__11.chain;
+                                    sendingChain = $__43;
                                     $ctx.state = 26;
                                     break;
                                 case 26:
@@ -2104,10 +1853,10 @@
                                 default:
                                     return $ctx.end();
                                 }
-                        }, $__41, this);
+                        }, $__29, this);
                     }));
-                var initializeBobSession = co.wrap($traceurRuntime.initGeneratorFunction(function $__56(parameters) {
-                        var agreements, $__11, rootKey, sendingChain, $__57, $__58, $__59, $__60, $__61, $__62, $__63;
+                var initializeBobSession = co.wrap($traceurRuntime.initGeneratorFunction(function $__44(parameters) {
+                        var agreements, $__10, rootKey, sendingChain, $__45, $__46, $__47, $__48, $__49, $__50, $__51;
                         return $traceurRuntime.createGeneratorInstance(function ($ctx) {
                             while (true)
                                 switch ($ctx.state) {
@@ -2123,34 +1872,34 @@
                                     $ctx.state = 18;
                                     break;
                                 case 18:
-                                    $__57 = ratchet.deriveInitialRootKeyAndChain;
-                                    $__58 = parameters.sessionVersion;
+                                    $__45 = ratchet.deriveInitialRootKeyAndChain;
+                                    $__46 = parameters.sessionVersion;
                                     $ctx.state = 10;
                                     break;
                                 case 10:
                                     $ctx.state = 2;
                                     return agreements;
                                 case 2:
-                                    $__59 = $ctx.sent;
+                                    $__47 = $ctx.sent;
                                     $ctx.state = 4;
                                     break;
                                 case 4:
-                                    $__60 = $__57.call(ratchet, $__58, $__59);
+                                    $__48 = $__45.call(ratchet, $__46, $__47);
                                     $ctx.state = 12;
                                     break;
                                 case 12:
                                     $ctx.state = 6;
-                                    return $__60;
+                                    return $__48;
                                 case 6:
-                                    $__61 = $ctx.sent;
+                                    $__49 = $ctx.sent;
                                     $ctx.state = 8;
                                     break;
                                 case 8:
-                                    $__11 = $__61;
-                                    $__62 = $__11.rootKey;
-                                    rootKey = $__62;
-                                    $__63 = $__11.chain;
-                                    sendingChain = $__63;
+                                    $__10 = $__49;
+                                    $__50 = $__10.rootKey;
+                                    rootKey = $__50;
+                                    $__51 = $__10.chain;
+                                    sendingChain = $__51;
                                     $ctx.state = 14;
                                     break;
                                 case 14:
@@ -2167,7 +1916,7 @@
                                 default:
                                     return $ctx.end();
                                 }
-                        }, $__56, this);
+                        }, $__44, this);
                     }));
                 Object.freeze(self);
             }
@@ -2241,61 +1990,6 @@
                 },
                 __esModule: { value: true }
             });
-            var __moduleName = 'build/src\\SessionStateList';
-            var $__build_47_ProtocolConstants__, $__build_47_ArrayBufferUtils__;
-            var ProtocolConstants = ($__build_47_ProtocolConstants__ = _require(9), $__build_47_ProtocolConstants__ && $__build_47_ProtocolConstants__.__esModule && $__build_47_ProtocolConstants__ || { default: $__build_47_ProtocolConstants__ }).default;
-            var ArrayBufferUtils = ($__build_47_ArrayBufferUtils__ = _require(1), $__build_47_ArrayBufferUtils__ && $__build_47_ArrayBufferUtils__.__esModule && $__build_47_ArrayBufferUtils__ || { default: $__build_47_ArrayBufferUtils__ }).default;
-            function SessionStateList(sessionPersistor, serialisedState) {
-                var self = this;
-                var sessions = [];
-                if (serialisedState) {
-                    sessions = JSON.parse(serialisedState, function (key, value) {
-                        if (typeof value === 'string' && value.substring(0, 5) === '{{ab:') {
-                            return ArrayBufferUtils.parse(value.substring(5, value.length - 2));
-                        }
-                        return value;
-                    });
-                }
-                Object.defineProperty(self, 'sessions', {
-                    get: function () {
-                        return sessions;
-                    }
-                });
-                self.mostRecentSession = function () {
-                    return sessions[0];
-                };
-                self.addSessionState = function (sessionState) {
-                    sessions.unshift(sessionState);
-                    if (sessions.length > ProtocolConstants.maximumSessionsPerIdentity) {
-                        sessions.pop();
-                    }
-                };
-                self.removeSessionState = function (sessionState) {
-                    var index = sessions.indexOf(sessionState);
-                    sessions.splice(index, 1);
-                };
-                self.save = function () {
-                    return sessionPersistor(JSON.stringify(sessions, function (key, value) {
-                        if (value instanceof ArrayBuffer) {
-                            return '{{ab:' + ArrayBufferUtils.stringify(value) + '}}';
-                        }
-                        return value;
-                    }));
-                };
-                Object.freeze(this);
-            }
-            var $__default = SessionStateList;
-        },
-        function (module, exports) {
-            'use strict';
-            Object.defineProperties(exports, {
-                default: {
-                    get: function () {
-                        return $__default;
-                    }
-                },
-                __esModule: { value: true }
-            });
             var __moduleName = 'build/src\\Store';
             var $__build_47_PromiseInterfaceDecorator__;
             var PromiseInterfaceDecorator = ($__build_47_PromiseInterfaceDecorator__ = _require(8), $__build_47_PromiseInterfaceDecorator__ && $__build_47_PromiseInterfaceDecorator__.__esModule && $__build_47_PromiseInterfaceDecorator__ || { default: $__build_47_PromiseInterfaceDecorator__ }).default;
@@ -2303,12 +1997,7 @@
                     'getLocalIdentityKeyPair',
                     'getLocalRegistrationId',
                     'getLocalSignedPreKeyPair',
-                    'getLocalPreKeyPair',
-                    'getRemotePreKeyBundle',
-                    'isRemoteIdentityTrusted',
-                    'hasSession',
-                    'getSession',
-                    'putSession'
+                    'getLocalPreKeyPair'
                 ];
             var Store = function Store(store) {
                 $traceurRuntime.superConstructor($Store).call(this, store, methodNames);
@@ -2320,7 +2009,7 @@
         function (module, exports) {
             'use strict';
             var __moduleName = 'build/src\\WhisperProtos';
-            module.exports = _require(20).newBuilder({})['import']({
+            module.exports = _require(19).newBuilder({})['import']({
                 'package': 'textsecure',
                 'messages': [
                     {

@@ -25,7 +25,7 @@ var makeReadonly = (obj, key) => {
 };
 
 /**
- * A serialisable representation of a session.
+ * A serialisable representation of a session "state". Sessions can contain multiple states.
  */
 export default class SessionState {
     /**

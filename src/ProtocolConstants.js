@@ -33,5 +33,5 @@ export default {
     // TODO: Make these configurable?
     maximumRetainedReceivedChainKeys: 5,
     maximumMissedMessages: 2000,
-    maximumSessionsPerIdentity: 40
+    maximumSessionStatesPerIdentity: 40
 };

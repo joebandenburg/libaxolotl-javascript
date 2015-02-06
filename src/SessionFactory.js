@@ -15,13 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Session from "./Session";
 import WhisperProtos from "./WhisperProtos";
 import ArrayBufferUtils from "./ArrayBufferUtils";
 import Messages from "./Messages";
 import Ratchet from "./Ratchet";
 import SessionState from "./SessionState";
-import SessionStateList from "./SessionStateList";
+import Session from "./Session";
 import {InvalidKeyException, UnsupportedProtocolVersionException, UntrustedIdentityException} from "./Exceptions";
 import co from "co";
 
@@ -30,13 +29,23 @@ function SessionFactory(crypto, store) {
 
     const ratchet = new Ratchet(crypto);
 
-    var sessionCache = {};
+    /**
+     * @typedef {Object} PreKeyBundle
+     * @property {ArrayBuffer} identityKey - The remote identity's public key.
+     * @property {Number} preKeyId - The identifier of the pre-key included in this bundle.
+     * @property {ArrayBuffer} preKey - The public half of the pre-key.
+     * @property {Number} signedPreKeyId - The identifier of the signed pre-key included in this bundle.
+     * @property {ArrayBuffer} signedPreKey - The public half of the signed pre-key.
+     * @property {ArrayBuffer} signedPreKeySignature - The signature associated with the `signedPreKey`
+     */
 
-    self.createSessionFromPreKeyBundle = co.wrap(function*(toIdentity, retrievedPreKeyBundle) {
-        var isTrusted = yield store.isRemoteIdentityTrusted(toIdentity, retrievedPreKeyBundle.identityKey);
-        if (!isTrusted) {
-            throw new UntrustedIdentityException();
-        }
+    /**
+     * Create a session from a pre-key bundle, probably retrieved from a server.
+     * @method
+     * @type {PreKeyBundle} retrievedPreKeyBundle - a pre-key bundle
+     * @returns {Promise.<Session, Error>}
+     */
+    self.createSessionFromPreKeyBundle = co.wrap(function*(retrievedPreKeyBundle) {
         if (retrievedPreKeyBundle.signedPreKey) {
             var validSignature = yield crypto.verifySignature(retrievedPreKeyBundle.identityKey,
                 retrievedPreKeyBundle.signedPreKey,
@@ -71,15 +80,19 @@ function SessionFactory(crypto, store) {
             baseKey: ourBaseKeyPair.public
         };
         sessionState.localRegistrationId = yield store.getLocalRegistrationId();
-        var sessionStateList = new SessionStateList((serialisedState) => {
-            return store.putSession(toIdentity, serialisedState);
-        });
-        sessionStateList.addSessionState(sessionState);
-        yield sessionStateList.save();
-        return yield self.getSessionForIdentity(toIdentity);
+        var session = new Session();
+        session.addState(sessionState);
+        return session;
     });
 
-    self.createSessionFromPreKeyWhisperMessage = co.wrap(function*(fromIdentity, preKeyWhisperMessageBytes) {
+    /**
+     * Create a session from a PreKeyWhisperMessage.
+     * @method
+     * @type {Session} session - a session, if one exists, or null otherwise.
+     * @type {ArrayBuffer} preKeyWhisperMessageBytes - the bytes of a PreKeyWhisperMessage.
+     * @returns {Promise.<Session, Error>}
+     */
+    self.createSessionFromPreKeyWhisperMessage = co.wrap(function*(session, preKeyWhisperMessageBytes) {
         var preKeyWhisperMessage = Messages.decodePreKeyWhisperMessage(preKeyWhisperMessageBytes);
         if (preKeyWhisperMessage.version.current !== 3) {
             // TODO: Support protocol version 2
@@ -87,17 +100,12 @@ function SessionFactory(crypto, store) {
                 preKeyWhisperMessage.version.current + " is not supported");
         }
         var message = preKeyWhisperMessage.message;
-        var isTrusted = yield store.isRemoteIdentityTrusted(fromIdentity, message.identityKey);
-        if (!isTrusted) {
-            throw new UntrustedIdentityException();
-        }
 
-        if (self.hasSessionForIdentity(fromIdentity)) {
-            var cachedSession = yield getSessionStateListForIdentity(fromIdentity);
-            for (var cachedSessionState of cachedSession.sessionStateList.sessions) {
+        if (session) {
+            for (var cachedSessionState of session.states) {
                 if (cachedSessionState.theirBaseKey &&
                     ArrayBufferUtils.areEqual(cachedSessionState.theirBaseKey, message.baseKey)) {
-                    return cachedSession.session;
+                    return session;
                 }
             }
         }
@@ -121,37 +129,15 @@ function SessionFactory(crypto, store) {
 
         var sessionState = yield initializeBobSession(bobParameters);
         sessionState.theirBaseKey = message.baseKey;
-        var { sessionStateList } = yield getSessionStateListForIdentity(fromIdentity);
-        sessionStateList.addSessionState(sessionState);
-        yield sessionStateList.save();
-        return yield self.getSessionForIdentity(fromIdentity);
+        if (!session) {
+            session = new Session();
+        }
+        session.addState(sessionState);
+        return session;
     });
 
     // TODO: Implement
     //self.createSessionFromKeyExchange = (toIdentity, keyExchange) => {};
-
-    self.hasSessionForIdentity = (identity) => {
-        return store.hasSession(identity);
-    };
-
-    var getSessionStateListForIdentity = co.wrap(function*(identity) {
-        if (!sessionCache[identity]) {
-            var serialisedSessionStateList = yield store.getSession(identity);
-            var sessionStateList = new SessionStateList((serialisedState) => {
-                return store.putSession(identity, serialisedState);
-            }, serialisedSessionStateList);
-            sessionCache[identity] = {
-                sessionStateList: sessionStateList,
-                session: new Session(crypto, sessionStateList)
-            };
-        }
-        return sessionCache[identity];
-    });
-
-    self.getSessionForIdentity = co.wrap(function*(identity) {
-        var cachedSession = yield getSessionStateListForIdentity(identity);
-        return cachedSession.session;
-    });
 
     var initializeAliceSession = co.wrap(function*(parameters) {
         var sendingRatchetKeyPair = yield crypto.generateKeyPair();

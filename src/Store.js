@@ -21,12 +21,7 @@ var methodNames = [
     "getLocalIdentityKeyPair",
     "getLocalRegistrationId",
     "getLocalSignedPreKeyPair",
-    "getLocalPreKeyPair",
-    "getRemotePreKeyBundle",
-    "isRemoteIdentityTrusted",
-    "hasSession",
-    "getSession",
-    "putSession"
+    "getLocalPreKeyPair"
 ];
 
 export default class Store extends PromiseInterfaceDecorator {

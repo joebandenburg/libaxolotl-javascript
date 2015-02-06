@@ -108,89 +108,12 @@ Name|Type|Description
 :---|:---|:----------
 `preKeyId`|Number|The identifier of the pre-key.
 
-#### getRemotePreKeyBundle
-
-```
-getRemotePreKeyBundle(remoteIdentity) → {PreKeyBundle}
-```
-
-Retrieve a pre-key bundle for a remote identity. This will likely be retrieved from a remote server. A `PreKeyBundle` is
-a JavaScript object with the following properties:
-
-Name|Type|Description
-:---|:---|:----------
-`identityKey`|ArrayBuffer|The remote identity's public key.
-`preKeyId`|Number|The identifier of the pre-key included in this bundle.
-`preKey`|ArrayBuffer|The public half of the pre-key.
-`signedPreKeyId`|Number|The identifier of the signed pre-key included in this bundle.
-`signedPreKey`|ArrayBuffer|The public half of the signed pre-key.
-`signedPreKeySignature`|ArrayBuffer|The signature associated with the `signedPreKey`.
-
 ##### Parameters
 
 Name|Type|Description
 :---|:---|:----------
 `remoteIdentity`|Identity|The identity of the remote entity. The type is the same as the type you pass to into
 the methods on Axolotl.
-
-#### isRemoteIdentityTrusted
-
-```
-isRemoteIdentityTrusted(remoteIdentity, identityPublicKey) → {Boolean}
-```
-
-Determine if the public key associated with the remote identity is trusted. It is up to the application to determine
-an appropriate algorithm for this.
-
-##### Parameters
-
-Name|Type|Description
-:---|:---|:----------
-`remoteIdentity`|Identity|The identity of the remote entity.
-`identityPublicKey`|ArrayBuffer|The purported remote identity's public key.
-
-#### hasSession
-
-```
-hasSession(identity) → {Boolean}
-```
-
-Determine if there is a stored session for the identity.
-
-##### Parameters
-
-Name|Type|Description
-:---|:---|:----------
-`identity`|Identity|The identity.
-
-#### getSession
-
-```
-getSession(identity) → {String}
-```
-
-Retrieve the session state associated with the identity.
-
-##### Parameters
-
-Name|Type|Description
-:---|:---|:----------
-`identity`|Identity|The identity.
-
-#### putSession
-
-```
-putSession(identity, sessionState) → {Void}
-```
-
-Store the session state along with the identity.
-
-##### Parameters
-
-Name|Type|Description
-:---|:---|:----------
-`identity`|Identity|The identity.
-`sessionState`|String|The serialised session state.
 
 ### Using Axolotl
 
@@ -229,4 +152,4 @@ axol.decryptPreKeyWhisperMessage("alice", ciphertext).then(function(plaintext) {
 });
 ```
 
-and that's it!
+See [Axolotl.js](src/Axolotl.js) for more detailed API documentation.
