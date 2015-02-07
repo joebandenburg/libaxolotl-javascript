@@ -194,7 +194,7 @@ function Axolotl(crypto, store) {
      * @type {PreKeyBundle} a pre-key bundle
      * @returns {Promise.<Session, Error>}
      */
-    this.generateSignedPreKeyBundle = sessionFactory.createSessionFromPreKeyBundle;
+    this.createSessionFromPreKeyBundle = sessionFactory.createSessionFromPreKeyBundle;
 
     /**
      * Create a session from a PreKeyWhisperMessage.

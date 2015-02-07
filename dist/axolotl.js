@@ -291,7 +291,7 @@
                             }
                     }, $__20, this);
                 }));
-                this.generateSignedPreKeyBundle = sessionFactory.createSessionFromPreKeyBundle;
+                this.createSessionFromPreKeyBundle = sessionFactory.createSessionFromPreKeyBundle;
                 this.createSessionFromPreKeyWhisperMessage = sessionFactory.createSessionFromPreKeyWhisperMessage;
                 this.encryptMessage = sessionCipher.encryptMessage;
                 this.decryptWhisperMessage = sessionCipher.decryptWhisperMessage;

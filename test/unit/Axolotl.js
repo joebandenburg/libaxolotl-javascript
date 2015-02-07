@@ -175,7 +175,7 @@ describe("Axolotl", () => {
             var plaintext = crypto.randomBytes(10);
             if (!receivingSession.session) {
                 var bundle = (receivingSession === bobSession) ? bobPreKeyBundle : alicePreKeyBundle;
-                receivingSession.session = yield sendingAxolotl.generateSignedPreKeyBundle(bundle);
+                receivingSession.session = yield sendingAxolotl.createSessionFromPreKeyBundle(bundle);
             }
             var result = yield sendingAxolotl.encryptMessage(receivingSession.session, plaintext);
             receivingSession.session = result.session;
