@@ -1,6 +1,6 @@
 {
   "name": "axolotl",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A JavaScript port of libaxolotl. Axolotl is a ratcheting forward secrecy protocol.",
   "main": "dist/axolotl.js",
   "directories": {
