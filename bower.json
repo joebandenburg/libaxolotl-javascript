@@ -1,7 +1,7 @@
 {
   "name": "axolotl",
   "main": "dist/axolotl.js",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "authors": [
     "Joe Bandenburg <joe@bandenburg.com>"
   ],
@@ -34,7 +34,7 @@
   ],
   "dependencies": {
     "protobuf": "~3.8.2",
-    "traceur-runtime": "~0.0.79",
+    "traceur-runtime": "~0.0.83",
     "axolotl-crypto": "~1.1.0"
   }
 }

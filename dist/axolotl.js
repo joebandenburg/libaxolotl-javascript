@@ -23,7 +23,7 @@
             'axolotl-crypto'
         ], factory);
     } else if (typeof exports === 'object') {
-        module.exports = factory(require('protobufjs'), require('traceur-runtime'), require('axolotl-crypto'));
+        module.exports = factory(require('protobufjs'), require('traceur/bin/traceur-runtime'), require('axolotl-crypto'));
     } else {
         this.axolotl = factory(dcodeIO.ProtoBuf, 1, axolotlCrypto);
     }
@@ -45,7 +45,6 @@
     _require.modules = [
         function (module, exports) {
             'use strict';
-            var __moduleName = 'build\\index';
             var $__src_47_Axolotl__, $__axolotl_45_crypto__;
             var Axolotl = ($__src_47_Axolotl__ = _require(2), $__src_47_Axolotl__ && $__src_47_Axolotl__.__esModule && $__src_47_Axolotl__ || { default: $__src_47_Axolotl__ }).default;
             var axolotlCrypto = ($__axolotl_45_crypto__ = _require(17), $__axolotl_45_crypto__ && $__axolotl_45_crypto__.__esModule && $__axolotl_45_crypto__ || { default: $__axolotl_45_crypto__ }).default;
@@ -55,7 +54,7 @@
         },
         function (module, exports) {
             'use strict';
-            Object.defineProperties(exports, {
+            Object.defineProperties(module.exports, {
                 default: {
                     get: function () {
                         return $__default;
@@ -63,7 +62,6 @@
                 },
                 __esModule: { value: true }
             });
-            var __moduleName = 'build/src\\ArrayBufferUtils';
             var $__default = {
                     areEqual: function (left, right) {
                         if (left.byteLength !== right.byteLength) {
@@ -123,7 +121,7 @@
         },
         function (module, exports) {
             'use strict';
-            Object.defineProperties(exports, {
+            Object.defineProperties(module.exports, {
                 default: {
                     get: function () {
                         return $__default;
@@ -131,13 +129,12 @@
                 },
                 __esModule: { value: true }
             });
-            var __moduleName = 'build/src\\Axolotl';
-            var $__build_47_SessionFactory__, $__build_47_SessionCipher__, $__build_47_Exceptions__, $__build_47_Store__, $__build_47_Crypto__, $__co__, $__axolotl_45_crypto__;
-            var SessionFactory = ($__build_47_SessionFactory__ = _require(13), $__build_47_SessionFactory__ && $__build_47_SessionFactory__.__esModule && $__build_47_SessionFactory__ || { default: $__build_47_SessionFactory__ }).default;
-            var SessionCipher = ($__build_47_SessionCipher__ = _require(12), $__build_47_SessionCipher__ && $__build_47_SessionCipher__.__esModule && $__build_47_SessionCipher__ || { default: $__build_47_SessionCipher__ }).default;
-            var InvalidMessageException = ($__build_47_Exceptions__ = _require(5), $__build_47_Exceptions__ && $__build_47_Exceptions__.__esModule && $__build_47_Exceptions__ || { default: $__build_47_Exceptions__ }).InvalidMessageException;
-            var Store = ($__build_47_Store__ = _require(15), $__build_47_Store__ && $__build_47_Store__.__esModule && $__build_47_Store__ || { default: $__build_47_Store__ }).default;
-            var Crypto = ($__build_47_Crypto__ = _require(4), $__build_47_Crypto__ && $__build_47_Crypto__.__esModule && $__build_47_Crypto__ || { default: $__build_47_Crypto__ }).default;
+            var $__SessionFactory__, $__SessionCipher__, $__Exceptions__, $__Store__, $__Crypto__, $__co__, $__axolotl_45_crypto__;
+            var SessionFactory = ($__SessionFactory__ = _require(13), $__SessionFactory__ && $__SessionFactory__.__esModule && $__SessionFactory__ || { default: $__SessionFactory__ }).default;
+            var SessionCipher = ($__SessionCipher__ = _require(12), $__SessionCipher__ && $__SessionCipher__.__esModule && $__SessionCipher__ || { default: $__SessionCipher__ }).default;
+            var InvalidMessageException = ($__Exceptions__ = _require(5), $__Exceptions__ && $__Exceptions__.__esModule && $__Exceptions__ || { default: $__Exceptions__ }).InvalidMessageException;
+            var Store = ($__Store__ = _require(15), $__Store__ && $__Store__.__esModule && $__Store__ || { default: $__Store__ }).default;
+            var Crypto = ($__Crypto__ = _require(4), $__Crypto__ && $__Crypto__.__esModule && $__Crypto__ || { default: $__Crypto__ }).default;
             var co = ($__co__ = _require(18), $__co__ && $__co__.__esModule && $__co__ || { default: $__co__ }).default;
             var axolotlCrypto = ($__axolotl_45_crypto__ = _require(17), $__axolotl_45_crypto__ && $__axolotl_45_crypto__.__esModule && $__axolotl_45_crypto__ || { default: $__axolotl_45_crypto__ }).default;
             function Axolotl(crypto, store) {
@@ -305,7 +302,7 @@
         },
         function (module, exports) {
             'use strict';
-            Object.defineProperties(exports, {
+            Object.defineProperties(module.exports, {
                 default: {
                     get: function () {
                         return $__default;
@@ -313,7 +310,6 @@
                 },
                 __esModule: { value: true }
             });
-            var __moduleName = 'build/src\\Chain';
             var Chain = function Chain(key) {
                 this.key = key;
                 this.index = 0;
@@ -325,7 +321,7 @@
         },
         function (module, exports) {
             'use strict';
-            Object.defineProperties(exports, {
+            Object.defineProperties(module.exports, {
                 default: {
                     get: function () {
                         return $__default;
@@ -333,9 +329,8 @@
                 },
                 __esModule: { value: true }
             });
-            var __moduleName = 'build/src\\Crypto';
-            var $__build_47_PromiseInterfaceDecorator__;
-            var PromiseInterfaceDecorator = ($__build_47_PromiseInterfaceDecorator__ = _require(8), $__build_47_PromiseInterfaceDecorator__ && $__build_47_PromiseInterfaceDecorator__.__esModule && $__build_47_PromiseInterfaceDecorator__ || { default: $__build_47_PromiseInterfaceDecorator__ }).default;
+            var $__PromiseInterfaceDecorator__;
+            var PromiseInterfaceDecorator = ($__PromiseInterfaceDecorator__ = _require(8), $__PromiseInterfaceDecorator__ && $__PromiseInterfaceDecorator__.__esModule && $__PromiseInterfaceDecorator__ || { default: $__PromiseInterfaceDecorator__ }).default;
             var methodNames = [
                     'generateKeyPair',
                     'calculateAgreement',
@@ -355,7 +350,7 @@
         },
         function (module, exports) {
             'use strict';
-            Object.defineProperties(exports, {
+            Object.defineProperties(module.exports, {
                 InvalidMessageException: {
                     get: function () {
                         return InvalidMessageException;
@@ -383,7 +378,6 @@
                 },
                 __esModule: { value: true }
             });
-            var __moduleName = 'build/src\\Exceptions';
             var InvalidMessageException = function InvalidMessageException() {
                 $traceurRuntime.superConstructor($InvalidMessageException).apply(this, arguments);
             };
@@ -412,7 +406,7 @@
         },
         function (module, exports) {
             'use strict';
-            Object.defineProperties(exports, {
+            Object.defineProperties(module.exports, {
                 default: {
                     get: function () {
                         return $__default;
@@ -420,9 +414,8 @@
                 },
                 __esModule: { value: true }
             });
-            var __moduleName = 'build/src\\HKDF';
-            var $__build_47_ArrayBufferUtils__, $__co__;
-            var ArrayBufferUtils = ($__build_47_ArrayBufferUtils__ = _require(1), $__build_47_ArrayBufferUtils__ && $__build_47_ArrayBufferUtils__.__esModule && $__build_47_ArrayBufferUtils__ || { default: $__build_47_ArrayBufferUtils__ }).default;
+            var $__ArrayBufferUtils__, $__co__;
+            var ArrayBufferUtils = ($__ArrayBufferUtils__ = _require(1), $__ArrayBufferUtils__ && $__ArrayBufferUtils__.__esModule && $__ArrayBufferUtils__ || { default: $__ArrayBufferUtils__ }).default;
             var co = ($__co__ = _require(18), $__co__ && $__co__.__esModule && $__co__ || { default: $__co__ }).default;
             var hashOutputSize = 32;
             var iterationStartOffset = 1;
@@ -524,7 +517,7 @@
         },
         function (module, exports) {
             'use strict';
-            Object.defineProperties(exports, {
+            Object.defineProperties(module.exports, {
                 default: {
                     get: function () {
                         return $__default;
@@ -532,11 +525,10 @@
                 },
                 __esModule: { value: true }
             });
-            var __moduleName = 'build/src\\Messages';
-            var $__build_47_WhisperProtos__, $__build_47_ProtocolConstants__, $__build_47_ArrayBufferUtils__;
-            var WhisperProtos = ($__build_47_WhisperProtos__ = _require(16), $__build_47_WhisperProtos__ && $__build_47_WhisperProtos__.__esModule && $__build_47_WhisperProtos__ || { default: $__build_47_WhisperProtos__ }).default;
-            var ProtocolConstants = ($__build_47_ProtocolConstants__ = _require(9), $__build_47_ProtocolConstants__ && $__build_47_ProtocolConstants__.__esModule && $__build_47_ProtocolConstants__ || { default: $__build_47_ProtocolConstants__ }).default;
-            var ArrayBufferUtils = ($__build_47_ArrayBufferUtils__ = _require(1), $__build_47_ArrayBufferUtils__ && $__build_47_ArrayBufferUtils__.__esModule && $__build_47_ArrayBufferUtils__ || { default: $__build_47_ArrayBufferUtils__ }).default;
+            var $__WhisperProtos__, $__ProtocolConstants__, $__ArrayBufferUtils__;
+            var WhisperProtos = ($__WhisperProtos__ = _require(16), $__WhisperProtos__ && $__WhisperProtos__.__esModule && $__WhisperProtos__ || { default: $__WhisperProtos__ }).default;
+            var ProtocolConstants = ($__ProtocolConstants__ = _require(9), $__ProtocolConstants__ && $__ProtocolConstants__.__esModule && $__ProtocolConstants__ || { default: $__ProtocolConstants__ }).default;
+            var ArrayBufferUtils = ($__ArrayBufferUtils__ = _require(1), $__ArrayBufferUtils__ && $__ArrayBufferUtils__.__esModule && $__ArrayBufferUtils__ || { default: $__ArrayBufferUtils__ }).default;
             var getVersionField = function (version) {
                 return ArrayBufferUtils.fromByte((version.current << 4 | version.max) & 255);
             };
@@ -596,7 +588,7 @@
         },
         function (module, exports) {
             'use strict';
-            Object.defineProperties(exports, {
+            Object.defineProperties(module.exports, {
                 default: {
                     get: function () {
                         return $__default;
@@ -604,7 +596,6 @@
                 },
                 __esModule: { value: true }
             });
-            var __moduleName = 'build/src\\PromiseInterfaceDecorator';
             var wrap = function (fn) {
                 return function () {
                     return Promise.resolve(fn.apply(this, arguments));
@@ -625,7 +616,7 @@
         },
         function (module, exports) {
             'use strict';
-            Object.defineProperties(exports, {
+            Object.defineProperties(module.exports, {
                 default: {
                     get: function () {
                         return $__default;
@@ -633,7 +624,6 @@
                 },
                 __esModule: { value: true }
             });
-            var __moduleName = 'build/src\\ProtocolConstants';
             var $__default = {
                     currentVersion: 3,
                     macByteCount: 8,
@@ -650,7 +640,7 @@
         },
         function (module, exports) {
             'use strict';
-            Object.defineProperties(exports, {
+            Object.defineProperties(module.exports, {
                 default: {
                     get: function () {
                         return $__default;
@@ -658,12 +648,11 @@
                 },
                 __esModule: { value: true }
             });
-            var __moduleName = 'build/src\\Ratchet';
-            var $__build_47_HKDF__, $__build_47_Chain__, $__build_47_ArrayBufferUtils__, $__build_47_ProtocolConstants__, $__co__;
-            var HKDF = ($__build_47_HKDF__ = _require(6), $__build_47_HKDF__ && $__build_47_HKDF__.__esModule && $__build_47_HKDF__ || { default: $__build_47_HKDF__ }).default;
-            var Chain = ($__build_47_Chain__ = _require(3), $__build_47_Chain__ && $__build_47_Chain__.__esModule && $__build_47_Chain__ || { default: $__build_47_Chain__ }).default;
-            var ArrayBufferUtils = ($__build_47_ArrayBufferUtils__ = _require(1), $__build_47_ArrayBufferUtils__ && $__build_47_ArrayBufferUtils__.__esModule && $__build_47_ArrayBufferUtils__ || { default: $__build_47_ArrayBufferUtils__ }).default;
-            var ProtocolConstants = ($__build_47_ProtocolConstants__ = _require(9), $__build_47_ProtocolConstants__ && $__build_47_ProtocolConstants__.__esModule && $__build_47_ProtocolConstants__ || { default: $__build_47_ProtocolConstants__ }).default;
+            var $__HKDF__, $__Chain__, $__ArrayBufferUtils__, $__ProtocolConstants__, $__co__;
+            var HKDF = ($__HKDF__ = _require(6), $__HKDF__ && $__HKDF__.__esModule && $__HKDF__ || { default: $__HKDF__ }).default;
+            var Chain = ($__Chain__ = _require(3), $__Chain__ && $__Chain__.__esModule && $__Chain__ || { default: $__Chain__ }).default;
+            var ArrayBufferUtils = ($__ArrayBufferUtils__ = _require(1), $__ArrayBufferUtils__ && $__ArrayBufferUtils__.__esModule && $__ArrayBufferUtils__ || { default: $__ArrayBufferUtils__ }).default;
+            var ProtocolConstants = ($__ProtocolConstants__ = _require(9), $__ProtocolConstants__ && $__ProtocolConstants__.__esModule && $__ProtocolConstants__ || { default: $__ProtocolConstants__ }).default;
             var co = ($__co__ = _require(18), $__co__ && $__co__.__esModule && $__co__ || { default: $__co__ }).default;
             var messageKeySeed = 1;
             var chainKeySeed = 2;
@@ -958,7 +947,7 @@
         },
         function (module, exports) {
             'use strict';
-            Object.defineProperties(exports, {
+            Object.defineProperties(module.exports, {
                 default: {
                     get: function () {
                         return $__default;
@@ -966,16 +955,15 @@
                 },
                 __esModule: { value: true }
             });
-            var __moduleName = 'build/src\\Session';
-            var $__build_47_ProtocolConstants__, $__build_47_ArrayBufferUtils__, $__build_47_SessionState__;
-            var ProtocolConstants = ($__build_47_ProtocolConstants__ = _require(9), $__build_47_ProtocolConstants__ && $__build_47_ProtocolConstants__.__esModule && $__build_47_ProtocolConstants__ || { default: $__build_47_ProtocolConstants__ }).default;
-            var ArrayBufferUtils = ($__build_47_ArrayBufferUtils__ = _require(1), $__build_47_ArrayBufferUtils__ && $__build_47_ArrayBufferUtils__.__esModule && $__build_47_ArrayBufferUtils__ || { default: $__build_47_ArrayBufferUtils__ }).default;
-            var SessionState = ($__build_47_SessionState__ = _require(14), $__build_47_SessionState__ && $__build_47_SessionState__.__esModule && $__build_47_SessionState__ || { default: $__build_47_SessionState__ }).default;
+            var $__ProtocolConstants__, $__ArrayBufferUtils__, $__SessionState__;
+            var ProtocolConstants = ($__ProtocolConstants__ = _require(9), $__ProtocolConstants__ && $__ProtocolConstants__.__esModule && $__ProtocolConstants__ || { default: $__ProtocolConstants__ }).default;
+            var ArrayBufferUtils = ($__ArrayBufferUtils__ = _require(1), $__ArrayBufferUtils__ && $__ArrayBufferUtils__.__esModule && $__ArrayBufferUtils__ || { default: $__ArrayBufferUtils__ }).default;
+            var SessionState = ($__SessionState__ = _require(14), $__SessionState__ && $__SessionState__.__esModule && $__SessionState__ || { default: $__SessionState__ }).default;
             function Session(session) {
                 var self = this;
                 var states = [];
                 if (session) {
-                    for (var $__3 = session.states[$traceurRuntime.toProperty(Symbol.iterator)](), $__4; !($__4 = $__3.next()).done;) {
+                    for (var $__3 = session.states[$traceurRuntime.toProperty(Symbol.iterator)](), $__4 = void 0; !($__4 = $__3.next()).done;) {
                         var state = $__4.value;
                         {
                             states.push(new SessionState(state));
@@ -1006,7 +994,7 @@
         },
         function (module, exports) {
             'use strict';
-            Object.defineProperties(exports, {
+            Object.defineProperties(module.exports, {
                 default: {
                     get: function () {
                         return $__default;
@@ -1014,15 +1002,14 @@
                 },
                 __esModule: { value: true }
             });
-            var __moduleName = 'build/src\\SessionCipher';
-            var $__build_47_ArrayBufferUtils__, $__build_47_ProtocolConstants__, $__build_47_Messages__, $__build_47_SessionState__, $__build_47_Session__, $__build_47_Ratchet__, $__build_47_Exceptions__, $__co__;
-            var ArrayBufferUtils = ($__build_47_ArrayBufferUtils__ = _require(1), $__build_47_ArrayBufferUtils__ && $__build_47_ArrayBufferUtils__.__esModule && $__build_47_ArrayBufferUtils__ || { default: $__build_47_ArrayBufferUtils__ }).default;
-            var ProtocolConstants = ($__build_47_ProtocolConstants__ = _require(9), $__build_47_ProtocolConstants__ && $__build_47_ProtocolConstants__.__esModule && $__build_47_ProtocolConstants__ || { default: $__build_47_ProtocolConstants__ }).default;
-            var Messages = ($__build_47_Messages__ = _require(7), $__build_47_Messages__ && $__build_47_Messages__.__esModule && $__build_47_Messages__ || { default: $__build_47_Messages__ }).default;
-            var SessionState = ($__build_47_SessionState__ = _require(14), $__build_47_SessionState__ && $__build_47_SessionState__.__esModule && $__build_47_SessionState__ || { default: $__build_47_SessionState__ }).default;
-            var Session = ($__build_47_Session__ = _require(11), $__build_47_Session__ && $__build_47_Session__.__esModule && $__build_47_Session__ || { default: $__build_47_Session__ }).default;
-            var Ratchet = ($__build_47_Ratchet__ = _require(10), $__build_47_Ratchet__ && $__build_47_Ratchet__.__esModule && $__build_47_Ratchet__ || { default: $__build_47_Ratchet__ }).default;
-            var $__6 = ($__build_47_Exceptions__ = _require(5), $__build_47_Exceptions__ && $__build_47_Exceptions__.__esModule && $__build_47_Exceptions__ || { default: $__build_47_Exceptions__ }), InvalidMessageException = $__6.InvalidMessageException, DuplicateMessageException = $__6.DuplicateMessageException;
+            var $__ArrayBufferUtils__, $__ProtocolConstants__, $__Messages__, $__SessionState__, $__Session__, $__Ratchet__, $__Exceptions__, $__co__;
+            var ArrayBufferUtils = ($__ArrayBufferUtils__ = _require(1), $__ArrayBufferUtils__ && $__ArrayBufferUtils__.__esModule && $__ArrayBufferUtils__ || { default: $__ArrayBufferUtils__ }).default;
+            var ProtocolConstants = ($__ProtocolConstants__ = _require(9), $__ProtocolConstants__ && $__ProtocolConstants__.__esModule && $__ProtocolConstants__ || { default: $__ProtocolConstants__ }).default;
+            var Messages = ($__Messages__ = _require(7), $__Messages__ && $__Messages__.__esModule && $__Messages__ || { default: $__Messages__ }).default;
+            var SessionState = ($__SessionState__ = _require(14), $__SessionState__ && $__SessionState__.__esModule && $__SessionState__ || { default: $__SessionState__ }).default;
+            var Session = ($__Session__ = _require(11), $__Session__ && $__Session__.__esModule && $__Session__ || { default: $__Session__ }).default;
+            var Ratchet = ($__Ratchet__ = _require(10), $__Ratchet__ && $__Ratchet__.__esModule && $__Ratchet__ || { default: $__Ratchet__ }).default;
+            var $__6 = ($__Exceptions__ = _require(5), $__Exceptions__ && $__Exceptions__.__esModule && $__Exceptions__ || { default: $__Exceptions__ }), InvalidMessageException = $__6.InvalidMessageException, DuplicateMessageException = $__6.DuplicateMessageException;
             var co = ($__co__ = _require(18), $__co__ && $__co__.__esModule && $__co__ || { default: $__co__ }).default;
             function SessionCipher(crypto) {
                 var self = this;
@@ -1089,7 +1076,7 @@
                                 $ctx.state = 17;
                                 break;
                             case 17:
-                                $__8 = newSession.states[$traceurRuntime.toProperty(Symbol.iterator)]();
+                                $__8 = newSession.states[$traceurRuntime.toProperty(Symbol.iterator)](), $__9 = void 0;
                                 $ctx.state = 6;
                                 break;
                             case 6:
@@ -1526,7 +1513,7 @@
         },
         function (module, exports) {
             'use strict';
-            Object.defineProperties(exports, {
+            Object.defineProperties(module.exports, {
                 default: {
                     get: function () {
                         return $__default;
@@ -1534,15 +1521,14 @@
                 },
                 __esModule: { value: true }
             });
-            var __moduleName = 'build/src\\SessionFactory';
-            var $__build_47_WhisperProtos__, $__build_47_ArrayBufferUtils__, $__build_47_Messages__, $__build_47_Ratchet__, $__build_47_SessionState__, $__build_47_Session__, $__build_47_Exceptions__, $__co__;
-            var WhisperProtos = ($__build_47_WhisperProtos__ = _require(16), $__build_47_WhisperProtos__ && $__build_47_WhisperProtos__.__esModule && $__build_47_WhisperProtos__ || { default: $__build_47_WhisperProtos__ }).default;
-            var ArrayBufferUtils = ($__build_47_ArrayBufferUtils__ = _require(1), $__build_47_ArrayBufferUtils__ && $__build_47_ArrayBufferUtils__.__esModule && $__build_47_ArrayBufferUtils__ || { default: $__build_47_ArrayBufferUtils__ }).default;
-            var Messages = ($__build_47_Messages__ = _require(7), $__build_47_Messages__ && $__build_47_Messages__.__esModule && $__build_47_Messages__ || { default: $__build_47_Messages__ }).default;
-            var Ratchet = ($__build_47_Ratchet__ = _require(10), $__build_47_Ratchet__ && $__build_47_Ratchet__.__esModule && $__build_47_Ratchet__ || { default: $__build_47_Ratchet__ }).default;
-            var SessionState = ($__build_47_SessionState__ = _require(14), $__build_47_SessionState__ && $__build_47_SessionState__.__esModule && $__build_47_SessionState__ || { default: $__build_47_SessionState__ }).default;
-            var Session = ($__build_47_Session__ = _require(11), $__build_47_Session__ && $__build_47_Session__.__esModule && $__build_47_Session__ || { default: $__build_47_Session__ }).default;
-            var $__6 = ($__build_47_Exceptions__ = _require(5), $__build_47_Exceptions__ && $__build_47_Exceptions__.__esModule && $__build_47_Exceptions__ || { default: $__build_47_Exceptions__ }), InvalidKeyException = $__6.InvalidKeyException, UnsupportedProtocolVersionException = $__6.UnsupportedProtocolVersionException, UntrustedIdentityException = $__6.UntrustedIdentityException;
+            var $__WhisperProtos__, $__ArrayBufferUtils__, $__Messages__, $__Ratchet__, $__SessionState__, $__Session__, $__Exceptions__, $__co__;
+            var WhisperProtos = ($__WhisperProtos__ = _require(16), $__WhisperProtos__ && $__WhisperProtos__.__esModule && $__WhisperProtos__ || { default: $__WhisperProtos__ }).default;
+            var ArrayBufferUtils = ($__ArrayBufferUtils__ = _require(1), $__ArrayBufferUtils__ && $__ArrayBufferUtils__.__esModule && $__ArrayBufferUtils__ || { default: $__ArrayBufferUtils__ }).default;
+            var Messages = ($__Messages__ = _require(7), $__Messages__ && $__Messages__.__esModule && $__Messages__ || { default: $__Messages__ }).default;
+            var Ratchet = ($__Ratchet__ = _require(10), $__Ratchet__ && $__Ratchet__.__esModule && $__Ratchet__ || { default: $__Ratchet__ }).default;
+            var SessionState = ($__SessionState__ = _require(14), $__SessionState__ && $__SessionState__.__esModule && $__SessionState__ || { default: $__SessionState__ }).default;
+            var Session = ($__Session__ = _require(11), $__Session__ && $__Session__.__esModule && $__Session__ || { default: $__Session__ }).default;
+            var $__6 = ($__Exceptions__ = _require(5), $__Exceptions__ && $__Exceptions__.__esModule && $__Exceptions__ || { default: $__Exceptions__ }), InvalidKeyException = $__6.InvalidKeyException, UnsupportedProtocolVersionException = $__6.UnsupportedProtocolVersionException, UntrustedIdentityException = $__6.UntrustedIdentityException;
             var co = ($__co__ = _require(18), $__co__ && $__co__.__esModule && $__co__ || { default: $__co__ }).default;
             function SessionFactory(crypto, store) {
                 var self = this;
@@ -1671,7 +1657,7 @@
                                 $ctx.state = session ? 7 : 6;
                                 break;
                             case 7:
-                                $__8 = session.states[$traceurRuntime.toProperty(Symbol.iterator)]();
+                                $__8 = session.states[$traceurRuntime.toProperty(Symbol.iterator)](), $__9 = void 0;
                                 $ctx.state = 2;
                                 break;
                             case 2:
@@ -1924,7 +1910,7 @@
         },
         function (module, exports) {
             'use strict';
-            Object.defineProperties(exports, {
+            Object.defineProperties(module.exports, {
                 default: {
                     get: function () {
                         return $__default;
@@ -1932,10 +1918,9 @@
                 },
                 __esModule: { value: true }
             });
-            var __moduleName = 'build/src\\SessionState';
-            var $__build_47_ArrayBufferUtils__, $__build_47_ProtocolConstants__;
-            var ArrayBufferUtils = ($__build_47_ArrayBufferUtils__ = _require(1), $__build_47_ArrayBufferUtils__ && $__build_47_ArrayBufferUtils__.__esModule && $__build_47_ArrayBufferUtils__ || { default: $__build_47_ArrayBufferUtils__ }).default;
-            var ProtocolConstants = ($__build_47_ProtocolConstants__ = _require(9), $__build_47_ProtocolConstants__ && $__build_47_ProtocolConstants__.__esModule && $__build_47_ProtocolConstants__ || { default: $__build_47_ProtocolConstants__ }).default;
+            var $__ArrayBufferUtils__, $__ProtocolConstants__;
+            var ArrayBufferUtils = ($__ArrayBufferUtils__ = _require(1), $__ArrayBufferUtils__ && $__ArrayBufferUtils__.__esModule && $__ArrayBufferUtils__ || { default: $__ArrayBufferUtils__ }).default;
+            var ProtocolConstants = ($__ProtocolConstants__ = _require(9), $__ProtocolConstants__ && $__ProtocolConstants__.__esModule && $__ProtocolConstants__ || { default: $__ProtocolConstants__ }).default;
             var makeReadonly = function (obj, key) {
                 Object.defineProperty(obj, key, { writable: false });
             };
@@ -1982,7 +1967,7 @@
         },
         function (module, exports) {
             'use strict';
-            Object.defineProperties(exports, {
+            Object.defineProperties(module.exports, {
                 default: {
                     get: function () {
                         return $__default;
@@ -1990,9 +1975,8 @@
                 },
                 __esModule: { value: true }
             });
-            var __moduleName = 'build/src\\Store';
-            var $__build_47_PromiseInterfaceDecorator__;
-            var PromiseInterfaceDecorator = ($__build_47_PromiseInterfaceDecorator__ = _require(8), $__build_47_PromiseInterfaceDecorator__ && $__build_47_PromiseInterfaceDecorator__.__esModule && $__build_47_PromiseInterfaceDecorator__ || { default: $__build_47_PromiseInterfaceDecorator__ }).default;
+            var $__PromiseInterfaceDecorator__;
+            var PromiseInterfaceDecorator = ($__PromiseInterfaceDecorator__ = _require(8), $__PromiseInterfaceDecorator__ && $__PromiseInterfaceDecorator__.__esModule && $__PromiseInterfaceDecorator__ || { default: $__PromiseInterfaceDecorator__ }).default;
             var methodNames = [
                     'getLocalIdentityKeyPair',
                     'getLocalRegistrationId',
@@ -2008,7 +1992,6 @@
         },
         function (module, exports) {
             'use strict';
-            var __moduleName = 'build/src\\WhisperProtos';
             module.exports = _require(19).newBuilder({})['import']({
                 'package': 'textsecure',
                 'messages': [
@@ -2326,7 +2309,11 @@
             }
             function isGeneratorFunction(obj) {
                 var constructor = obj.constructor;
-                return constructor && 'GeneratorFunction' == constructor.name;
+                var proto = constructor.prototype;
+                var name = constructor.displayName || constructor.name;
+                var nameLooksRight = 'GeneratorFunction' == name;
+                var methodsLooksRight = 'function' == typeof proto.next && 'function' == typeof proto.throw;
+                return nameLooksRight || methodsLooksRight;
             }
             function isObject(val) {
                 return Object == val.constructor;

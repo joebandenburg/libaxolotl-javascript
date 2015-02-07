@@ -85,7 +85,8 @@ module.exports = function(grunt) {
                             global: "dcodeIO.ProtoBuf",
                             id: "__external_1"
                         },
-                        "traceur-runtime": {
+                        "traceur/bin/traceur-runtime": {
+                            amd: "traceur-runtime",
                             global: "1",
                             id: "__external_2"
                         },
