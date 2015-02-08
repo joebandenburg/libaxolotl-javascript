@@ -1,11 +1,11 @@
 {
   "name": "axolotl",
   "main": "dist/axolotl.js",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "authors": [
     "Joe Bandenburg <joe@bandenburg.com>"
   ],
-  "description": "A JavaScript port of libaxolotl. Axolotl is a ratcheting forward secrecy protocol.",
+  "description": "An independent JavaScript implementation of Axolotl. Axolotl is a ratcheting forward secrecy protocol.",
   "moduleType": [
     "amd",
     "globals",
