@@ -25,38 +25,30 @@ import SessionState from "./SessionState";
  * @param {Session|Object} [session] - another session. If passed, this session will clone its state.
  * @constructor
  */
-function Session(session) {
-    var self = this;
+export default class Session {
+    constructor(session) {
+        this.states = [];
+        if (session) {
+            for (let state of session.states) {
+                this.states.push(new SessionState(state));
+            }
+        }
+        Object.seal(this);
+    }
 
-    var states = [];
+    mostRecentState() {
+        return this.states[0];
+    }
 
-    if (session) {
-        for (let state of session.states) {
-            states.push(new SessionState(state));
+    addState(state) {
+        this.states.unshift(state);
+        if (this.states.length > ProtocolConstants.maximumSessionStatesPerIdentity) {
+            this.states.pop();
         }
     }
 
-    Object.defineProperty(self, "states", {
-        get: () => states
-    });
-
-    self.mostRecentState = () => {
-        return states[0];
-    };
-
-    self.addState = (state) => {
-        states.unshift(state);
-        if (states.length > ProtocolConstants.maximumSessionStatesPerIdentity) {
-            states.pop();
-        }
-    };
-
-    self.removeState = (state) => {
-        var index = states.indexOf(state);
-        states.splice(index, 1);
-    };
-
-    Object.freeze(this);
+    removeState(state) {
+        var index = this.states.indexOf(state);
+        this.states.splice(index, 1);
+    }
 }
-
-export default Session;
