@@ -292,10 +292,41 @@
                     }, $__20, this);
                 }));
                 this.createSessionFromPreKeyBundle = sessionFactory.createSessionFromPreKeyBundle;
-                this.createSessionFromPreKeyWhisperMessage = sessionFactory.createSessionFromPreKeyWhisperMessage;
                 this.encryptMessage = sessionCipher.encryptMessage;
                 this.decryptWhisperMessage = sessionCipher.decryptWhisperMessage;
-                this.decryptPreKeyWhisperMessage = sessionCipher.decryptPreKeyWhisperMessage;
+                this.decryptPreKeyWhisperMessage = co.wrap($traceurRuntime.initGeneratorFunction(function $__21(session, preKeyWhisperMessageBytes) {
+                    var $__22, $__23, $__24;
+                    return $traceurRuntime.createGeneratorInstance(function ($ctx) {
+                        while (true)
+                            switch ($ctx.state) {
+                            case 0:
+                                $ctx.state = 2;
+                                return sessionFactory.createSessionFromPreKeyWhisperMessage(session, preKeyWhisperMessageBytes);
+                            case 2:
+                                session = $ctx.sent;
+                                $ctx.state = 4;
+                                break;
+                            case 4:
+                                $__22 = sessionCipher.decryptPreKeyWhisperMessage;
+                                $__23 = $__22.call(sessionCipher, session, preKeyWhisperMessageBytes);
+                                $ctx.state = 10;
+                                break;
+                            case 10:
+                                $ctx.state = 6;
+                                return $__23;
+                            case 6:
+                                $__24 = $ctx.sent;
+                                $ctx.state = 8;
+                                break;
+                            case 8:
+                                $ctx.returnValue = $__24;
+                                $ctx.state = -2;
+                                break;
+                            default:
+                                return $ctx.end();
+                            }
+                    }, $__21, this);
+                }));
                 Object.freeze(self);
             }
             var $__default = Axolotl;
@@ -959,37 +990,33 @@
             var ProtocolConstants = ($__ProtocolConstants__ = _require(9), $__ProtocolConstants__ && $__ProtocolConstants__.__esModule && $__ProtocolConstants__ || { default: $__ProtocolConstants__ }).default;
             var ArrayBufferUtils = ($__ArrayBufferUtils__ = _require(1), $__ArrayBufferUtils__ && $__ArrayBufferUtils__.__esModule && $__ArrayBufferUtils__ || { default: $__ArrayBufferUtils__ }).default;
             var SessionState = ($__SessionState__ = _require(14), $__SessionState__ && $__SessionState__.__esModule && $__SessionState__ || { default: $__SessionState__ }).default;
-            function Session(session) {
-                var self = this;
-                var states = [];
+            var Session = function Session(session) {
+                this.states = [];
                 if (session) {
-                    for (var $__3 = session.states[$traceurRuntime.toProperty(Symbol.iterator)](), $__4 = void 0; !($__4 = $__3.next()).done;) {
-                        var state = $__4.value;
+                    for (var $__4 = session.states[$traceurRuntime.toProperty(Symbol.iterator)](), $__5 = void 0; !($__5 = $__4.next()).done;) {
+                        var state = $__5.value;
                         {
-                            states.push(new SessionState(state));
+                            this.states.push(new SessionState(state));
                         }
                     }
                 }
-                Object.defineProperty(self, 'states', {
-                    get: function () {
-                        return states;
+                Object.seal(this);
+            };
+            $traceurRuntime.createClass(Session, {
+                mostRecentState: function () {
+                    return this.states[0];
+                },
+                addState: function (state) {
+                    this.states.unshift(state);
+                    if (this.states.length > ProtocolConstants.maximumSessionStatesPerIdentity) {
+                        this.states.pop();
                     }
-                });
-                self.mostRecentState = function () {
-                    return states[0];
-                };
-                self.addState = function (state) {
-                    states.unshift(state);
-                    if (states.length > ProtocolConstants.maximumSessionStatesPerIdentity) {
-                        states.pop();
-                    }
-                };
-                self.removeState = function (state) {
-                    var index = states.indexOf(state);
-                    states.splice(index, 1);
-                };
-                Object.freeze(this);
-            }
+                },
+                removeState: function (state) {
+                    var index = this.states.indexOf(state);
+                    this.states.splice(index, 1);
+                }
+            }, {});
             var $__default = Session;
         },
         function (module, exports) {

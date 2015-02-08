@@ -197,15 +197,6 @@ function Axolotl(crypto, store) {
     this.createSessionFromPreKeyBundle = sessionFactory.createSessionFromPreKeyBundle;
 
     /**
-     * Create a session from a PreKeyWhisperMessage.
-     * @method
-     * @type {Session} session - a session, if one exists, or null otherwise.
-     * @type {ArrayBuffer} preKeyWhisperMessageBytes - the bytes of a PreKeyWhisperMessage.
-     * @returns {Promise.<Session, Error>}
-     */
-    this.createSessionFromPreKeyWhisperMessage = sessionFactory.createSessionFromPreKeyWhisperMessage;
-
-    /**
      * Encrypt a message using the session.
      * <p>
      * If this method succeeds, the passed in session should be destroyed. This method must never be called with
@@ -232,14 +223,18 @@ function Axolotl(crypto, store) {
     this.decryptWhisperMessage = sessionCipher.decryptWhisperMessage;
 
     /**
-     * Unwrap the WhisperMessage from a PreKeyWhisperMessage and attempt to decrypt it using session.
+     * Unwrap the WhisperMessage from a PreKeyWhisperMessage and attempt to decrypt it using session. If a session does
+     * not already exist, it will be created.
      *
      * @method
-     * @param {Session} session
+     * @param {Session} session - a session, if one exists, or null otherwise.
      * @param {ArrayBuffer} preKeyWhisperMessageBytes - the encrypted message bytes
      * @returns {Promise.<Object, InvalidMessageException>} an object containing the decrypted message and a new session
      */
-    this.decryptPreKeyWhisperMessage = sessionCipher.decryptPreKeyWhisperMessage;
+    this.decryptPreKeyWhisperMessage = co.wrap(function*(session, preKeyWhisperMessageBytes) {
+        session = yield sessionFactory.createSessionFromPreKeyWhisperMessage(session, preKeyWhisperMessageBytes);
+        return yield sessionCipher.decryptPreKeyWhisperMessage(session, preKeyWhisperMessageBytes);
+    });
 
     Object.freeze(self);
 }

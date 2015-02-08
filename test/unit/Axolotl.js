@@ -188,8 +188,6 @@ describe("Axolotl", () => {
         var decryptMessage = co.wrap(function*(receivingAxolotl, sendingSession, message) {
             var result;
             if (message.ciphertext.isPreKeyWhisperMessage) {
-                sendingSession.session = yield receivingAxolotl.createSessionFromPreKeyWhisperMessage(
-                    sendingSession.session, message.ciphertext.body);
                 result = yield receivingAxolotl.decryptPreKeyWhisperMessage(sendingSession.session,
                     message.ciphertext.body);
             } else {
@@ -409,7 +407,7 @@ describe("Axolotl", () => {
                 },
                 message: {}
             });
-            yield assert.isRejected(bobAxolotl.createSessionFromPreKeyWhisperMessage(aliceSession, message),
+            yield assert.isRejected(bobAxolotl.decryptPreKeyWhisperMessage(aliceSession, message),
                 UnsupportedProtocolVersionException);
         }));
         it("accepts out of order message delivery (main ratchet)", co.wrap(function*() {
