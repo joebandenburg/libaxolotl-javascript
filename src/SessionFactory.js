@@ -129,11 +129,9 @@ function SessionFactory(crypto, store) {
 
         var sessionState = yield initializeBobSession(bobParameters);
         sessionState.theirBaseKey = message.baseKey;
-        if (!session) {
-            session = new Session();
-        }
-        session.addState(sessionState);
-        return session;
+        var clonedSession = new Session(session);
+        clonedSession.addState(sessionState);
+        return clonedSession;
     });
 
     // TODO: Implement

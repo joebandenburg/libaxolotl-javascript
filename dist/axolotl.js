@@ -1668,7 +1668,7 @@
                     }, $__12, this);
                 }));
                 self.createSessionFromPreKeyWhisperMessage = co.wrap($traceurRuntime.initGeneratorFunction(function $__20(session, preKeyWhisperMessageBytes) {
-                    var preKeyWhisperMessage, message, $__8, $__9, cachedSessionState, ourSignedPreKeyPair, preKeyPair, bobParameters, sessionState, $__21, $__22, $__23, $__24, $__25, $__26, $__27, $__28;
+                    var preKeyWhisperMessage, message, $__8, $__9, cachedSessionState, ourSignedPreKeyPair, preKeyPair, bobParameters, sessionState, clonedSession, $__21, $__22, $__23, $__24, $__25, $__26, $__27, $__28;
                     return $traceurRuntime.createGeneratorInstance(function ($ctx) {
                         while (true)
                             switch ($ctx.state) {
@@ -1756,14 +1756,12 @@
                                 break;
                             case 29:
                                 sessionState.theirBaseKey = message.baseKey;
-                                if (!session) {
-                                    session = new Session();
-                                }
-                                session.addState(sessionState);
+                                clonedSession = new Session(session);
+                                clonedSession.addState(sessionState);
                                 $ctx.state = 35;
                                 break;
                             case 35:
-                                $ctx.returnValue = session;
+                                $ctx.returnValue = clonedSession;
                                 $ctx.state = -2;
                                 break;
                             default:
