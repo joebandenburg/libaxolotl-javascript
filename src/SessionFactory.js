@@ -113,7 +113,7 @@ function SessionFactory(crypto, store) {
         var ourSignedPreKeyPair = yield store.getLocalSignedPreKeyPair(message.signedPreKeyId);
 
         var preKeyPair;
-        if (message.preKeyId) {
+        if (message.preKeyId !== null) {
             preKeyPair = yield store.getLocalPreKeyPair(message.preKeyId);
         }
 

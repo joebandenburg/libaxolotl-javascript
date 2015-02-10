@@ -1709,7 +1709,7 @@
                                 $ctx.state = 12;
                                 break;
                             case 12:
-                                $ctx.state = message.preKeyId ? 13 : 16;
+                                $ctx.state = message.preKeyId !== null ? 13 : 16;
                                 break;
                             case 13:
                                 $ctx.state = 14;
