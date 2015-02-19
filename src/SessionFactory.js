@@ -105,7 +105,11 @@ function SessionFactory(crypto, store) {
             for (var cachedSessionState of session.states) {
                 if (cachedSessionState.theirBaseKey &&
                     ArrayBufferUtils.areEqual(cachedSessionState.theirBaseKey, message.baseKey)) {
-                    return session;
+                    return {
+                        session: session,
+                        identityKey: message.identityKey,
+                        registrationId: message.registrationId
+                    };
                 }
             }
         }
@@ -131,7 +135,11 @@ function SessionFactory(crypto, store) {
         sessionState.theirBaseKey = message.baseKey;
         var clonedSession = new Session(session);
         clonedSession.addState(sessionState);
-        return clonedSession;
+        return {
+            session: clonedSession,
+            identityKey: message.identityKey,
+            registrationId: message.registrationId
+        };
     });
 
     // TODO: Implement

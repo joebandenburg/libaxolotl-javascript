@@ -484,5 +484,13 @@ describe("Axolotl", () => {
                 yield assertSessionsCanCommunicateTwoWay();
             }));
         });
+        it("returns the identity key and registration id when decrypting a PreKeyWhisperMessage", co.wrap(function*() {
+            var plaintext = crypto.randomBytes(10);
+            var aliceInitialSession = yield aliceAxolotl.createSessionFromPreKeyBundle(bobPreKeyBundle);
+            var encryptionResult = yield aliceAxolotl.encryptMessage(aliceInitialSession, plaintext);
+            var decryptionResult = yield bobAxolotl.decryptPreKeyWhisperMessage(null, encryptionResult.body);
+            assert.equal(decryptionResult.registrationId, 666);
+            assert.ok(ArrayBufferUtils.areEqual(decryptionResult.identityKey, aliceIdentityKeyPair.public));
+        }));
     });
 });

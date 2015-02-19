@@ -232,8 +232,21 @@ function Axolotl(crypto, store) {
      * @returns {Promise.<Object, InvalidMessageException>} an object containing the decrypted message and a new session
      */
     this.decryptPreKeyWhisperMessage = co.wrap(function*(session, preKeyWhisperMessageBytes) {
-        session = yield sessionFactory.createSessionFromPreKeyWhisperMessage(session, preKeyWhisperMessageBytes);
-        return yield sessionCipher.decryptPreKeyWhisperMessage(session, preKeyWhisperMessageBytes);
+        var {
+            session: newSession,
+            identityKey,
+            registrationId
+        } = yield sessionFactory.createSessionFromPreKeyWhisperMessage(session, preKeyWhisperMessageBytes);
+        var {
+            session: finalSession,
+            message
+        } = yield sessionCipher.decryptPreKeyWhisperMessage(newSession, preKeyWhisperMessageBytes);
+        return {
+            message: message,
+            session: finalSession,
+            identityKey: identityKey,
+            registrationId: registrationId
+        };
     });
 
     Object.freeze(self);
