@@ -77,7 +77,7 @@ Verify an [Ed25519](http://en.wikipedia.org/wiki/EdDSA) signature.
 
 Name|Type|Description
 :---|:---|:----------
-`privateKey`|ArrayBuffer|The 33 byte public half of the key used to produce the signature.
+`publicKey`|ArrayBuffer|The 33 byte public half of the key used to produce the signature.
 `dataToSign`|ArrayBuffer|The data that was signed. May be any length.
 `purportedSignature`|ArrayBuffer|The purported signature to check.
 
