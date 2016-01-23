@@ -1,12 +1,13 @@
-import chai from "chai";
-import chaiAsPromised from "chai-as-promised";
-import SessionCipher from "../../src/SessionCipher";
-import SessionState from "../../src/SessionState";
-import Session from "../../src/Session";
-import Messages from "../../src/Messages";
-import {InvalidMessageException} from "../../src/Exceptions";
-import crypto from "./FakeCrypto";
-import co from "co";
+"use strict";
+const chai = require("chai");
+const chaiAsPromised = require("chai-as-promised");
+const SessionCipher = require("../../src/SessionCipher");
+const SessionState = require("../../src/SessionState");
+const Session = require("../../src/Session");
+const Messages = require("../../src/Messages");
+const InvalidMessageException = require("../../src/Exceptions").InvalidMessageException;
+const crypto = require("./FakeCrypto");
+const co = require("co");
 
 chai.use(chaiAsPromised);
 var assert = chai.assert;

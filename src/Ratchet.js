@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Copyright (C) 2015 Joe Bandenburg
  *
@@ -15,11 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import HKDF from "./HKDF";
-import Chain from "./Chain";
-import ArrayBufferUtils from "./ArrayBufferUtils";
-import ProtocolConstants from "./ProtocolConstants";
-import co from "co";
+const HKDF = require("./HKDF");
+const Chain = require("./Chain");
+const ArrayBufferUtils = require("./ArrayBufferUtils");
+const ProtocolConstants = require("./ProtocolConstants");
+const co = require("co");
 
 const messageKeySeed = 0x01;
 const chainKeySeed = 0x02;
@@ -137,4 +138,4 @@ function Ratchet(crypto) {
     });
 }
 
-export default Ratchet;
+module.exports = Ratchet;

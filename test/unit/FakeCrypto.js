@@ -1,6 +1,7 @@
-import chai from "chai";
-import crypto from "crypto";
-import co from "co";
+"use strict";
+const chai = require("chai");
+const crypto = require("crypto");
+const co = require("co");
 
 var assert = chai.assert;
 
@@ -81,7 +82,7 @@ var fakeCrypto = {
     }
 };
 
-export default fakeCrypto;
+module.exports = fakeCrypto;
 
 describe("FakeCrypto", () => {
     describe("generateKeyPair", () => {

@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Copyright (C) 2015 Joe Bandenburg
  *
@@ -15,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import PromiseInterfaceDecorator from "./PromiseInterfaceDecorator";
+const PromiseInterfaceDecorator = require("./PromiseInterfaceDecorator");
 
 var methodNames = [
     "getLocalIdentityKeyPair",
@@ -24,8 +25,10 @@ var methodNames = [
     "getLocalPreKeyPair"
 ];
 
-export default class Store extends PromiseInterfaceDecorator {
+class Store extends PromiseInterfaceDecorator {
     constructor(store) {
         super(store, methodNames);
     }
 }
+
+module.exports = Store;

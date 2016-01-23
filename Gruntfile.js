@@ -3,12 +3,10 @@
 module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-mocha-test"); // For server-side testing
     grunt.loadNpmTasks("grunt-karma"); // For client-side testing
-    grunt.loadNpmTasks("grunt-pure-cjs");
     grunt.loadNpmTasks("grunt-contrib-jshint");
     grunt.loadNpmTasks("grunt-blanket");
     grunt.loadNpmTasks("grunt-contrib-clean");
     grunt.loadNpmTasks("grunt-contrib-copy");
-    grunt.loadNpmTasks("grunt-traceur");
     grunt.loadNpmTasks("grunt-contrib-concat");
     grunt.loadNpmTasks("grunt-jscs");
 
@@ -22,7 +20,7 @@ module.exports = function(grunt) {
             all: {
                 src: ["Gruntfile.js", "index.js", "src/**/*.js", "test/**/*.js"],
                 options: {
-                    jshintrc: true
+                    jshintrc: ".jshintrc"
                 }
             }
         },
@@ -46,9 +44,6 @@ module.exports = function(grunt) {
         mochaTest: {
             unitTests: {
                 src: ["test/unit/**/*.js"],
-                options: {
-                    require: ["mocha-traceur"]
-                }
             },
             integrationTests: {
                 src: ["test/integration/node/**/*.js"],
@@ -73,51 +68,6 @@ module.exports = function(grunt) {
                 }
             }
         },
-        pure_cjs: {
-            dist: {
-                files: {
-                    "build/axolotl.js": ["build/index.js"]
-                },
-                options: {
-                    exports: "axolotl",
-                    external: {
-                        protobufjs: {
-                            global: "dcodeIO.ProtoBuf",
-                            id: "__external_1"
-                        },
-                        "traceur/bin/traceur-runtime": {
-                            amd: "traceur-runtime",
-                            global: "1",
-                            id: "__external_2"
-                        },
-                        "axolotl-crypto": {
-                            global: "axolotlCrypto"
-                        }
-                    }
-                }
-            }
-        },
-        traceur: {
-            dist: {
-                options: {
-                    modules: "commonjs"
-                },
-                files: [{
-                    expand: true,
-                    cwd: "src/",
-                    src: ["**/*.js"],
-                    dest: "build/src"
-                }, {
-                    src: ["index.js"],
-                    dest: "build/index.js"
-                }, {
-                    expand: true,
-                    cwd: "test/",
-                    src: ["**/*.js"],
-                    dest: "build/test"
-                }]
-            }
-        },
         concat: {
             dist: {
                 src: ["banner.js", "build/axolotl.js"],
@@ -126,11 +76,11 @@ module.exports = function(grunt) {
         }
     });
 
-    grunt.registerTask("coverage", ["traceur", "copy:coverage", "blanket", "mochaTest:coverage"]);
+    grunt.registerTask("coverage", ["copy:coverage", "blanket", "mochaTest:coverage"]);
 
     grunt.registerTask("check", ["jshint", "jscs"]);
     grunt.registerTask("test", ["clean", "check", "mochaTest:unitTests"]);
     grunt.registerTask("default", ["test"]);
-    grunt.registerTask("dist", ["default", "traceur", "pure_cjs", "concat"]);
+    grunt.registerTask("dist", ["default", "concat"]);
     grunt.registerTask("integration-test", ["dist", "mochaTest:integrationTests", "karma:integrationTests"]);
 };

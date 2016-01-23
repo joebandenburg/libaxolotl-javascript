@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Copyright (C) 2015 Joe Bandenburg
  *
@@ -15,14 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import ArrayBufferUtils from "./ArrayBufferUtils";
-import ProtocolConstants from "./ProtocolConstants";
-import Messages from "./Messages";
-import SessionState from "./SessionState";
-import Session from "./Session";
-import Ratchet from "./Ratchet";
-import {InvalidMessageException, DuplicateMessageException} from "./Exceptions";
-import co from "co";
+const ArrayBufferUtils = require("./ArrayBufferUtils");
+const ProtocolConstants = require("./ProtocolConstants");
+const Messages = require("./Messages");
+const SessionState = require("./SessionState");
+const Session = require("./Session");
+const Ratchet = require("./Ratchet");
+const co = require("co");
+const Exceptions = require("./Exceptions");
+const InvalidMessageException = Exceptions.InvalidMessageException;
+const DuplicateMessageException = Exceptions.DuplicateMessageException;
 
 /**
  * SessionCipher is responsible for encrypting and decrypting messages.
@@ -329,26 +332,27 @@ function SessionCipher(crypto) {
      * @return {Promise.<Chain, Error>} the next chain for decryption
      */
     var clickMainRatchet = co.wrap(function*(sessionState, theirEphemeralPublicKey) {
-        var {
-            rootKey: theirRootKey,
-            chain: nextReceivingChain
-        } = yield ratchet.deriveNextRootKeyAndChain(sessionState.rootKey, theirEphemeralPublicKey,
+        const result1 = yield ratchet.deriveNextRootKeyAndChain(sessionState.rootKey, theirEphemeralPublicKey,
                 sessionState.senderRatchetKeyPair.private);
-        var ourNewEphemeralKeyPair = yield crypto.generateKeyPair();
-        var {
-            rootKey,
-            chain: nextSendingChain
-        } = yield ratchet.deriveNextRootKeyAndChain(theirRootKey,
+        const theirRootKey = result1.rootKey;
+        const nextReceivingChain = result1.chain;
+        const ourNewEphemeralKeyPair = yield crypto.generateKeyPair();
+
+        const result2 = yield ratchet.deriveNextRootKeyAndChain(theirRootKey,
                 theirEphemeralPublicKey, ourNewEphemeralKeyPair.private);
+        const rootKey = result2.rootKey;
+        const nextSendingChain = result2.chain;
+
         sessionState.rootKey = rootKey;
         sessionState.addReceivingChain(theirEphemeralPublicKey, nextReceivingChain);
         sessionState.previousCounter = Math.max(sessionState.sendingChain.index - 1, 0);
         sessionState.sendingChain = nextSendingChain;
         sessionState.senderRatchetKeyPair = ourNewEphemeralKeyPair;
+
         return nextReceivingChain;
     });
 
     Object.freeze(self);
 }
 
-export default SessionCipher;
+module.exports = SessionCipher;

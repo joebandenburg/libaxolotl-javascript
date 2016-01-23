@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Copyright (C) 2015 Joe Bandenburg
  *
@@ -15,14 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import WhisperProtos from "./WhisperProtos";
-import ArrayBufferUtils from "./ArrayBufferUtils";
-import Messages from "./Messages";
-import Ratchet from "./Ratchet";
-import SessionState from "./SessionState";
-import Session from "./Session";
-import {InvalidKeyException, UnsupportedProtocolVersionException, UntrustedIdentityException} from "./Exceptions";
-import co from "co";
+const WhisperProtos = require("./WhisperProtos");
+const ArrayBufferUtils = require("./ArrayBufferUtils");
+const Messages = require("./Messages");
+const Ratchet = require("./Ratchet");
+const SessionState = require("./SessionState");
+const Session = require("./Session");
+const co = require("co");
+const Exceptions = require("./Exceptions");
+const InvalidKeyException = Exceptions.InvalidKeyException;
+const UnsupportedProtocolVersionException = Exceptions.UnsupportedProtocolVersionException;
+const UntrustedIdentityException = Exceptions.UntrustedIdentityException;
 
 function SessionFactory(crypto, store) {
     const self = this;
@@ -146,7 +150,7 @@ function SessionFactory(crypto, store) {
     //self.createSessionFromKeyExchange = (toIdentity, keyExchange) => {};
 
     var initializeAliceSession = co.wrap(function*(parameters) {
-        var sendingRatchetKeyPair = yield crypto.generateKeyPair();
+        var senderRatchetKeyPair = yield crypto.generateKeyPair();
 
         var agreements = [
             crypto.calculateAgreement(parameters.theirSignedPreKey, parameters.ourIdentityKeyPair.private),
@@ -157,23 +161,21 @@ function SessionFactory(crypto, store) {
             agreements.push(crypto.calculateAgreement(parameters.theirOneTimePreKey,
                 parameters.ourBaseKeyPair.private));
         }
-        var {
-            rootKey: theirRootKey,
-            chain: receivingChain
-        } = yield ratchet.deriveInitialRootKeyAndChain(parameters.sessionVersion, yield agreements);
-        var {
-            rootKey,
-            chain: sendingChain
-        } = yield ratchet.deriveNextRootKeyAndChain(theirRootKey, parameters.theirRatchetKey,
-                sendingRatchetKeyPair.private);
+        const initChain = yield ratchet.deriveInitialRootKeyAndChain(parameters.sessionVersion, yield agreements);
+        const theirRootKey = initChain.rootKey;
+        const receivingChain = initChain.chain;
+        const nextChain = yield ratchet.deriveNextRootKeyAndChain(theirRootKey, parameters.theirRatchetKey,
+                senderRatchetKeyPair.private);
+        const rootKey = nextChain.rootKey;
+        const sendingChain = nextChain.chain;
 
         var sessionState = new SessionState({
             sessionVersion: parameters.sessionVersion,
             remoteIdentityKey: parameters.theirIdentityKey,
             localIdentityKey: parameters.ourIdentityKeyPair.public,
-            rootKey: rootKey,
-            sendingChain: sendingChain,
-            senderRatchetKeyPair: sendingRatchetKeyPair
+            rootKey,
+            sendingChain,
+            senderRatchetKeyPair
         });
         sessionState.addReceivingChain(parameters.theirRatchetKey, receivingChain);
         return sessionState;
@@ -191,10 +193,9 @@ function SessionFactory(crypto, store) {
                 parameters.ourOneTimePreKeyPair.private));
         }
 
-        var {
-            rootKey,
-            chain: sendingChain
-        } = yield ratchet.deriveInitialRootKeyAndChain(parameters.sessionVersion, yield agreements);
+        const initChain = yield ratchet.deriveInitialRootKeyAndChain(parameters.sessionVersion, yield agreements);
+        const rootKey = initChain.rootKey;
+        const sendingChain = initChain.chain;
 
         return new SessionState({
             sessionVersion: parameters.sessionVersion,
@@ -209,4 +210,4 @@ function SessionFactory(crypto, store) {
     Object.freeze(self);
 }
 
-export default SessionFactory;
+module.exports = SessionFactory;

@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Axolotl from "./src/Axolotl";
-import axolotlCrypto from "axolotl-crypto";
+const Axolotl = require("./src/Axolotl");
+const axolotlCrypto = require("axolotl-crypto");
 
 module.exports = function(store) {
     return new Axolotl(axolotlCrypto, store);

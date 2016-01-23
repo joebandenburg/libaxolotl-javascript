@@ -1,3 +1,4 @@
+"use strict";
 var assert = require("assert");
 var ByteBuffer = require("ByteBuffer");
 var axolotl = require("../../../dist/axolotl");

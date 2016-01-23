@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Copyright (C) 2015 Joe Bandenburg
  *
@@ -15,9 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import ProtocolConstants from "./ProtocolConstants";
-import ArrayBufferUtils from "./ArrayBufferUtils";
-import SessionState from "./SessionState";
+const ProtocolConstants = require("./ProtocolConstants");
+const ArrayBufferUtils = require("./ArrayBufferUtils");
+const SessionState = require("./SessionState");
 
 /**
  * Represents the entire state of an Axolotl session.
@@ -25,7 +26,7 @@ import SessionState from "./SessionState";
  * @param {Session|Object} [session] - another session. If passed, this session will clone its state.
  * @constructor
  */
-export default class Session {
+class Session {
     constructor(session) {
         this.states = [];
         if (session) {
@@ -52,3 +53,5 @@ export default class Session {
         this.states.splice(index, 1);
     }
 }
+
+module.exports = Session;

@@ -1,8 +1,9 @@
-import chai from "chai";
-import HKDF from "../../src/HKDF";
-import ArrayBufferUtils from "../../src/ArrayBufferUtils";
-import crypto from "./FakeCrypto";
-import co from "co";
+"use strict";
+const chai = require("chai");
+const HKDF = require("../../src/HKDF");
+const ArrayBufferUtils = require("../../src/ArrayBufferUtils");
+const crypto = require("./FakeCrypto");
+const co = require("co");
 
 var assert = chai.assert;
 

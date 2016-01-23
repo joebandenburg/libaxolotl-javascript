@@ -1,6 +1,6 @@
 {
   "name": "axolotl",
-  "main": "dist/axolotl.js",
+  "main": "index.js",
   "version": "1.3.0",
   "authors": [
     "Joe Bandenburg <joe@bandenburg.com>"

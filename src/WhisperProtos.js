@@ -1,3 +1,4 @@
+"use strict";
 // Generated file. DO NOT EDIT!!
 module.exports = require("protobufjs").newBuilder({})["import"]({
     "package": "textsecure",

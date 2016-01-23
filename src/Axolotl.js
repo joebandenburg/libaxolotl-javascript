@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Copyright (C) 2015 Joe Bandenburg
  *
@@ -15,13 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import SessionFactory from "./SessionFactory";
-import SessionCipher from "./SessionCipher";
-import {InvalidMessageException} from "./Exceptions";
-import Store from "./Store";
-import Crypto from "./Crypto";
-import co from "co";
-import axolotlCrypto from "axolotl-crypto";
+const SessionFactory = require("./SessionFactory");
+const SessionCipher = require("./SessionCipher");
+const InvalidMessageException = require("./Exceptions").InvalidMessageException;
+const Store = require("./Store");
+const Crypto = require("./Crypto");
+const co = require("co");
+const axolotlCrypto = require("axolotl-crypto");
 
 /**
  * A public/private key pair
@@ -232,24 +233,22 @@ function Axolotl(crypto, store) {
      * @returns {Promise.<Object, InvalidMessageException>} an object containing the decrypted message and a new session
      */
     this.decryptPreKeyWhisperMessage = co.wrap(function*(session, preKeyWhisperMessageBytes) {
-        var {
-            session: newSession,
+        const result = yield sessionFactory.createSessionFromPreKeyWhisperMessage(session, preKeyWhisperMessageBytes);
+        const newSession = result.session;
+        const identityKey = result.identityKey;
+        const registrationId = result.registrationId ;
+        const decryptionResult = yield sessionCipher.decryptPreKeyWhisperMessage(newSession, preKeyWhisperMessageBytes);
+        const finalSession = decryptionResult.session;
+        const message = decryptionResult.message;
+        return {
+            message,
+            session: finalSession,
             identityKey,
             registrationId
-        } = yield sessionFactory.createSessionFromPreKeyWhisperMessage(session, preKeyWhisperMessageBytes);
-        var {
-            session: finalSession,
-            message
-        } = yield sessionCipher.decryptPreKeyWhisperMessage(newSession, preKeyWhisperMessageBytes);
-        return {
-            message: message,
-            session: finalSession,
-            identityKey: identityKey,
-            registrationId: registrationId
         };
     });
 
     Object.freeze(self);
 }
 
-export default Axolotl;
+module.exports = Axolotl;

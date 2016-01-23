@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Copyright (C) 2015 Joe Bandenburg
  *
@@ -15,9 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// TODO: Consider exporting these individually
-
-export default {
+module.exports = {
     currentVersion: 3,
 
     // Sizes of various fields

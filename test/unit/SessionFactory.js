@@ -1,19 +1,12 @@
-import chai from "chai";
-import chaiAsPromise from "chai-as-promised";
-import SessionFactory from "../../src/SessionFactory";
-import Session from "../../src/Session";
-import ArrayBufferUtils from "../../src/ArrayBufferUtils";
-import Messages from "../../src/Messages";
-import ProtocolConstants from "../../src/ProtocolConstants";
-import crypto from "./FakeCrypto";
-import {
-    InvalidMessageException,
-    DuplicateMessageException,
-    InvalidKeyException,
-    ConcurrentUseException,
-    UnsupportedProtocolVersionException
-} from "../../src/Exceptions";
-import co from "co";
+"use strict";
+const chai = require("chai");
+const chaiAsPromise = require("chai-as-promised");
+const SessionFactory = require("../../src/SessionFactory");
+const Session = require("../../src/Session");
+const ArrayBufferUtils = require("../../src/ArrayBufferUtils");
+const Messages = require("../../src/Messages");
+const ProtocolConstants = require("../../src/ProtocolConstants");
+const crypto = require("./FakeCrypto");
 
 chai.use(chaiAsPromise);
 var assert = chai.assert;

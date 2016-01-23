@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Copyright (C) 2015 Joe Bandenburg
  *
@@ -15,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import PromiseInterfaceDecorator from "./PromiseInterfaceDecorator";
+const PromiseInterfaceDecorator = require("./PromiseInterfaceDecorator");
 
 var methodNames = [
     "generateKeyPair",
@@ -28,8 +29,10 @@ var methodNames = [
     "decrypt"
 ];
 
-export default class Crypto extends PromiseInterfaceDecorator {
+class Crypto extends PromiseInterfaceDecorator {
     constructor(crypto) {
         super(crypto, methodNames);
     }
 }
+
+module.exports = Crypto;
