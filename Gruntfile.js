@@ -13,7 +13,7 @@ module.exports = function(grunt) {
     grunt.initConfig({
         clean: {
             all: {
-                src: ["coverage/", "dist/", "build/"]
+                src: ["coverage/"]
             }
         },
         jshint: {
@@ -31,13 +31,13 @@ module.exports = function(grunt) {
         },
         copy: {
             coverage: {
-                src: ["build/test/**"],
+                src: ["test/**"],
                 dest: "coverage/"
             }
         },
         blanket: {
             all: {
-                src: "build/src/",
+                src: "src/",
                 dest: "coverage/build/src/"
             }
         },
@@ -60,19 +60,6 @@ module.exports = function(grunt) {
                     clearRequireCache: true
                 }
             }
-        },
-        karma: {
-            integrationTests: {
-                options: {
-                    configFile: "karma.conf.js"
-                }
-            }
-        },
-        concat: {
-            dist: {
-                src: ["banner.js", "build/axolotl.js"],
-                dest: "dist/axolotl.js"
-            }
         }
     });
 
@@ -81,6 +68,5 @@ module.exports = function(grunt) {
     grunt.registerTask("check", ["jshint", "jscs"]);
     grunt.registerTask("test", ["clean", "check", "mochaTest:unitTests"]);
     grunt.registerTask("default", ["test"]);
-    grunt.registerTask("dist", ["default", "concat"]);
-    grunt.registerTask("integration-test", ["dist", "mochaTest:integrationTests", "karma:integrationTests"]);
+    grunt.registerTask("integration-test", ["mochaTest:integrationTests"]);
 };

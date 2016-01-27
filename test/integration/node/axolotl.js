@@ -1,7 +1,7 @@
 "use strict";
 var assert = require("assert");
-var ByteBuffer = require("ByteBuffer");
-var axolotl = require("../../../dist/axolotl");
+var ByteBuffer = require("bytebuffer");
+var axolotl = require("../../..");
 
 var fromHex = function(hex) {
     return ByteBuffer.fromHex(hex).toArrayBuffer();
