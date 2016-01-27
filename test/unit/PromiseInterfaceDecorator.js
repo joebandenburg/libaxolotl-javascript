@@ -1,6 +1,7 @@
-import chai from "chai";
+"use strict";
+const chai = require("chai");
 
-import PromiseInterfaceDecorator from "../../src/PromiseInterfaceDecorator";
+const PromiseInterfaceDecorator = require("../../src/PromiseInterfaceDecorator");
 
 var assert = chai.assert;
 

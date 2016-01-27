@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Copyright (C) 2015 Joe Bandenburg
  *
@@ -15,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import ArrayBufferUtils from "./ArrayBufferUtils";
-import ProtocolConstants from "./ProtocolConstants";
+const ArrayBufferUtils = require("./ArrayBufferUtils");
+const ProtocolConstants = require("./ProtocolConstants");
 
 var makeReadonly = (obj, key) => {
     Object.defineProperty(obj, key, {
@@ -27,7 +28,7 @@ var makeReadonly = (obj, key) => {
 /**
  * A serialisable representation of a session "state". Sessions can contain multiple states.
  */
-export default class SessionState {
+class SessionState {
     /**
      *
      * @param {object} parameters - initial parameters
@@ -86,3 +87,5 @@ export default class SessionState {
         }
     }
 }
+
+module.exports = SessionState;

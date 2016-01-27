@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Copyright (C) 2015 Joe Bandenburg
  *
@@ -15,9 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import WhisperProtos from "./WhisperProtos";
-import ProtocolConstants from "./ProtocolConstants";
-import ArrayBufferUtils from "./ArrayBufferUtils";
+const WhisperProtos = require("./WhisperProtos");
+const ProtocolConstants = require("./ProtocolConstants");
+const ArrayBufferUtils = require("./ArrayBufferUtils");
 
 var getVersionField = (version) => ArrayBufferUtils.fromByte((version.current << 4 | version.max) & 0xff);
 
@@ -41,7 +42,7 @@ var encodeWhisperMessageMacInput = (whisperMessage) => {
     return ArrayBufferUtils.concat(versionByte, messageBytes);
 };
 
-export default {
+module.exports = {
     decodeWhisperMessage: (whisperMessageBytes) => {
         var messageBytes = whisperMessageBytes.slice(1, -ProtocolConstants.macByteCount);
         var message = WhisperProtos.WhisperMessage.decode(messageBytes);

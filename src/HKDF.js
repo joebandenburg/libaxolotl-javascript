@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Copyright (C) 2015 Joe Bandenburg
  *
@@ -15,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import ArrayBufferUtils from "./ArrayBufferUtils";
-import co from "co";
+const ArrayBufferUtils = require("./ArrayBufferUtils");
+const co = require("co");
 
 var hashOutputSize = 32;
 var iterationStartOffset = 1; // TODO: Depends on protocol version
@@ -55,4 +56,4 @@ function HKDF(crypto) {
     Object.freeze(self);
 }
 
-export default HKDF;
+module.exports = HKDF;

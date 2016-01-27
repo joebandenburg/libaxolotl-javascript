@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Copyright (C) 2015 Joe Bandenburg
  *
@@ -18,7 +19,7 @@
 /**
  * A chain holds the state of the sub ratchet, used for sending multiple messages before receiving a reply.
  */
-export default class Chain {
+class Chain {
     /**
      *
      * @param {ArrayBuffer} key
@@ -30,3 +31,5 @@ export default class Chain {
         Object.seal(this);
     }
 }
+
+module.exports = Chain;

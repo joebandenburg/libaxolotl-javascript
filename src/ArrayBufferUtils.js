@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Copyright (C) 2015 Joe Bandenburg
  *
@@ -15,8 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export default {
-    // TODO: Consider timing attack
+module.exports = {
+    // Note the code here is not secure against timing and cache attacks in many
+    // places, including here. Take care to run it only on clients, not on a server,
+    // and client code should not automatically reply to messages.
+    // As long as all outgoing messages are triggered by user interaction, remote
+    // timing attacks are not a problem, and on the client malicious code timesharing
+    // the same CPU is not a concern we defend against.
     areEqual: (left, right) => {
         if (left.byteLength !== right.byteLength) {
             return false;
@@ -30,8 +36,10 @@ export default {
         }
         return true;
     },
-    concat: function(...buffers) {
-        buffers = (buffers.length === 1) ? buffers[0] : buffers;
+    concat: function(buffers) {
+        if (arguments.length > 1) {
+            buffers = arguments;
+        }
         var i;
         var byteLength = 0;
         for (i = 0; i < buffers.length; i++) {

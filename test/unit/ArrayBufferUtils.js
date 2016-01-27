@@ -1,5 +1,6 @@
-import chai from "chai";
-import ArrayBufferUtils from "../../src/ArrayBufferUtils";
+"use strict";
+const chai = require("chai");
+const ArrayBufferUtils = require("../../src/ArrayBufferUtils");
 
 var assert = chai.assert;
 

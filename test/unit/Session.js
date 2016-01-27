@@ -1,7 +1,8 @@
-import chai from "chai";
-import Session from "../../src/Session";
-import ProtocolConstants from "../../src/ProtocolConstants";
-import ArrayBufferUtils from "../../src/ArrayBufferUtils";
+"use strict";
+const chai = require("chai");
+const Session = require("../../src/Session");
+const ProtocolConstants = require("../../src/ProtocolConstants");
+const ArrayBufferUtils = require("../../src/ArrayBufferUtils");
 
 var assert = chai.assert;
 

@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Copyright (C) 2015 Joe Bandenburg
  *
@@ -26,7 +27,7 @@ var wrap = (fn) => {
  * <p>
  * This allows the consumer to deal only with promises.
  */
-export default class PromiseInterfaceDecorator {
+class PromiseInterfaceDecorator {
     constructor(impl, methodNames) {
         methodNames.forEach((methodName) => {
             if (!impl[methodName]) {
@@ -37,3 +38,5 @@ export default class PromiseInterfaceDecorator {
         Object.freeze(this);
     }
 }
+
+module.exports = PromiseInterfaceDecorator;

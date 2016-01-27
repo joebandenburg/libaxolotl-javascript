@@ -6,5 +6,6 @@
     "undef": true,
     "typed": true,
     "node": true,
-    "esnext": true
+    "esnext": true,
+    "jasmine": true
 }

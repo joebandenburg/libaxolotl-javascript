@@ -1,20 +1,20 @@
-import chai from "chai";
-import chaiAsPromised from "chai-as-promised";
-import sinon from "sinon";
-import co from "co";
+"use strict";
+const chai = require("chai");
+const chaiAsPromised = require("chai-as-promised");
+const sinon = require("sinon");
+const co = require("co");
 
-import Axolotl from "../../src/Axolotl";
-import ArrayBufferUtils from "../../src/ArrayBufferUtils";
-import ProtocolConstants from "../../src/ProtocolConstants";
-import Messages from "../../src/Messages";
-import {
-    UnsupportedProtocolVersionException,
-    InvalidKeyException,
-    InvalidMessageException,
-    DuplicateMessageException,
-    UntrustedIdentityException
-} from "../../src/Exceptions";
-import crypto from "./FakeCrypto";
+const Axolotl = require("../../src/Axolotl");
+const ArrayBufferUtils = require("../../src/ArrayBufferUtils");
+const ProtocolConstants = require("../../src/ProtocolConstants");
+const Messages = require("../../src/Messages");
+const Exceptions = require("../../src/Exceptions");
+const UnsupportedProtocolVersionException = Exceptions.UnsupportedProtocolVersionException;
+const InvalidKeyException = Exceptions.InvalidKeyException;
+const InvalidMessageException = Exceptions.InvalidMessageException ;
+const DuplicateMessageException = Exceptions.DuplicateMessageException ;
+const UntrustedIdentityException = Exceptions.UntrustedIdentityException ;
+const crypto = require("./FakeCrypto");
 
 chai.use(chaiAsPromised);
 var assert = chai.assert;
