@@ -225,7 +225,7 @@ describe("Axolotl", () => {
             aliceSession = {};
             bobSession = {};
 
-            crypto.validSiganture = true;
+            crypto.validSignature = true;
 
             aliceIdentityKeyPair = yield crypto.generateKeyPair();
             aliceSignedPreKeyPair = yield crypto.generateKeyPair();
@@ -372,7 +372,7 @@ describe("Axolotl", () => {
             yield assert.isRejected(decryptMessage(bobAxolotl, aliceSession, ciphertext), InvalidMessageException);
         }));
         it("rejects bad signedPreKey signature", co.wrap(function*() {
-            crypto.validSiganture = false;
+            crypto.validSignature = false;
             yield assert.isRejected(createEncryptedMessage(aliceAxolotl, bobSession), InvalidKeyException);
         }));
         it("rejects preKeyBundle if neither preKey nor signedPreKey are present", co.wrap(function*() {
