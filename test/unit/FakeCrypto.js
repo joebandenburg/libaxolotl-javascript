@@ -50,10 +50,10 @@ var fakeCrypto = {
             resolve(new ArrayBuffer(32));
         });
     },
-    validSiganture: true,
+    validSignature: true,
     verifySignature: function() {
         return new Promise(function(resolve) {
-            resolve(fakeCrypto.validSiganture);
+            resolve(fakeCrypto.validSignature);
         });
     },
     hmac: function(key, data) {
